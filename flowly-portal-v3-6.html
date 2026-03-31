@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>flowly.media — Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0d0d0d; --bg2:#141414; --bg3:#1c1c1c; --bg4:#222222;
+  --b1:#252525; --b2:#2e2e2e; --b3:#3a3a3a;
+  --w:#f5f5f5; --w2:#ffffff; --g1:#c8c8c8; --g2:#8a8a8a; --g3:#505050; --g4:#2a2a2a;
+  --green:#3ddc84; --red:#ff4d4d; --yellow:#f5c518; --blue:#60a5fa;
+  --fd:'Barlow Condensed',sans-serif; --fb:'Barlow',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--w);font-family:var(--fb);font-size:13px;min-height:100vh;overflow-x:hidden;}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;}
+
+/* ── LOGIN / SIGNUP ── */
+#loginScreen,#signupScreen{
+  align-items:center;justify-content:center;flex-direction:column;gap:32px;
+  background:var(--bg);
+}
+.auth-brand{font-family:var(--fd);font-size:12px;font-weight:600;letter-spacing:5px;text-transform:uppercase;color:var(--g2);}
+.auth-title{font-family:var(--fd);font-size:60px;font-weight:900;letter-spacing:-1px;line-height:.9;text-align:center;color:var(--w2);text-transform:uppercase;}
+.auth-title span{color:var(--g3);}
+.auth-box{background:var(--bg2);border:1px solid var(--b2);border-radius:12px;padding:32px;width:380px;display:flex;flex-direction:column;gap:14px;}
+.auth-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--g2);display:block;margin-bottom:5px;}
+.auth-input{width:100%;background:var(--bg3);border:1px solid var(--b2);color:var(--w);font-family:var(--fb);font-size:13px;padding:11px 14px;border-radius:7px;outline:none;transition:border-color .15s;}
+.auth-input:focus{border-color:var(--g2);}
+.auth-btn{width:100%;padding:13px;background:var(--w2);color:var(--bg);border:none;border-radius:7px;font-family:var(--fd);font-size:16px;font-weight:800;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:opacity .15s;margin-top:2px;}
+.auth-btn:hover{opacity:.88;}
+.auth-err{font-size:11px;color:var(--red);text-align:center;display:none;}
+.auth-link{font-size:12px;color:var(--g2);text-align:center;cursor:pointer;}
+.auth-link span{color:var(--w);text-decoration:underline;}
+
+/* ── APP ── */
+#appScreen{flex-direction:row;}
+
+/* ── SIDEBAR ── */
+.sb{
+  width:200px;min-height:100vh;background:var(--bg2);border-right:1px solid var(--b1);
+  position:fixed;top:0;left:0;display:flex;flex-direction:column;z-index:100;
+}
+.sb-top{padding:18px 16px 14px;border-bottom:1px solid var(--b1);}
+.sb-logo{font-family:var(--fd);font-size:20px;font-weight:800;letter-spacing:.5px;color:var(--w2);}
+.sb-logo span{color:var(--g3);font-weight:400;}
+.sb-tag{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--g3);margin-top:1px;}
+.sb-user{background:var(--bg3);border:1px solid var(--b2);border-radius:7px;padding:9px 11px;margin-top:10px;display:flex;align-items:center;gap:9px;}
+.sb-av{width:28px;height:28px;border-radius:50%;background:var(--w2);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:800;font-size:12px;color:var(--bg);flex-shrink:0;}
+.sb-uname{font-size:12px;font-weight:600;color:var(--w);line-height:1.2;}
+.sb-urole{font-size:9px;color:var(--g2);letter-spacing:1px;text-transform:uppercase;}
+.sb-gl{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--g3);padding:14px 16px 4px;}
+.sb-it{display:flex;align-items:center;gap:9px;padding:7px 16px;font-size:12px;color:var(--g2);cursor:pointer;border-left:2px solid transparent;transition:all .12s;font-weight:400;}
+.sb-it:hover{color:var(--w);background:rgba(255,255,255,.03);}
+.sb-it.on{color:var(--w2);border-left-color:var(--w2);background:rgba(255,255,255,.05);font-weight:600;}
+.sb-it svg{width:13px;height:13px;flex-shrink:0;opacity:.6;}
+.sb-it.on svg{opacity:1;}
+.admin-only{display:none;}
+body.is-admin .admin-only{display:block;}
+.sb-bot{margin-top:auto;padding:14px 16px 0;border-top:1px solid var(--b1);}
+.sb-logout{background:none;border:none;font-family:var(--fb);font-size:11px;color:var(--g3);cursor:pointer;display:flex;align-items:center;gap:6px;transition:color .12s;}
+.sb-logout:hover{color:var(--red);}
+
+/* ── MAIN ── */
+.main{margin-left:200px;flex:1;min-height:100vh;display:flex;flex-direction:column;}
+.topbar{position:sticky;top:0;z-index:90;background:rgba(13,13,13,.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--b1);padding:0 24px;height:50px;display:flex;align-items:center;justify-content:space-between;}
+.tb-left{display:flex;align-items:baseline;gap:8px;}
+.tb-title{font-family:var(--fd);font-size:20px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--w2);}
+.tb-sep{color:var(--g3);font-size:16px;}
+.tb-sub{font-size:11px;color:var(--g2);}
+.tb-right{display:flex;gap:8px;align-items:center;}
+.content{padding:20px 24px 48px;flex:1;}
+
+/* Panels */
+.panel{display:none;animation:fi .18s ease;}
+.panel.active{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Buttons */
+.btn{padding:6px 13px;border-radius:5px;font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:none;transition:all .12s;}
+.btn-w{background:var(--w2);color:var(--bg);}
+.btn-w:hover{opacity:.88;}
+.btn-o{background:transparent;border:1px solid var(--b2);color:var(--g2);}
+.btn-o:hover{color:var(--w);border-color:var(--g2);}
+.btn-r{background:rgba(255,77,77,.12);border:1px solid rgba(255,77,77,.25);color:var(--red);}
+.btn-r:hover{background:rgba(255,77,77,.2);}
+.btn-sm{padding:4px 10px;font-size:11px;}
+
+/* Month nav */
+.mnav{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--b1);border-radius:7px;padding:8px 14px;margin-bottom:16px;}
+.mnav-title{font-family:var(--fd);font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.mnav-btn{background:var(--bg3);border:1px solid var(--b2);color:var(--g1);font-family:var(--fd);font-size:11px;font-weight:600;letter-spacing:1px;padding:4px 12px;border-radius:4px;cursor:pointer;transition:all .12s;text-transform:uppercase;}
+.mnav-btn:hover{color:var(--w2);border-color:var(--g2);}
+
+/* Cards */
+.card{background:var(--bg2);border:1px solid var(--b1);border-radius:8px;padding:18px;}
+.card-h{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+.card-t{font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--w2);}
+.card-s{font-size:10px;color:var(--g2);margin-top:2px;}
+.g2c{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3c{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.g4c{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
+.mb{margin-bottom:12px;}
+
+/* KPI card */
+.kc{background:var(--bg2);border:1px solid var(--b1);border-radius:7px;padding:14px 12px;}
+.kc-l{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:7px;}
+.kc-v{font-family:var(--fd);font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1;color:var(--w2);}
+.kc-d{font-size:10px;margin-top:4px;}
+.cup{color:var(--green)}.cdn{color:var(--red)}.cnt{color:var(--g2);}
+
+/* ── SPREADSHEET TABLE ── */
+.tbl-wrap{overflow-x:auto;border-radius:6px;border:1px solid var(--b1);}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead tr{background:var(--bg3);}
+thead th{
+  text-align:center;padding:6px 8px;font-size:9px;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--g2);border:1px solid var(--b2);
+  font-weight:600;white-space:nowrap;position:sticky;top:0;background:var(--bg3);
+}
+thead th:first-child{text-align:center;width:36px;}
+tbody td{
+  padding:5px 7px;border:1px solid var(--b1);font-size:12px;
+  text-align:center;vertical-align:middle;
+}
+tbody tr:hover td{background:rgba(255,255,255,.02);}
+/* section header rows */
+.sec-hdr td{
+  background:var(--bg4);color:var(--g1);font-family:var(--fd);
+  font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  padding:5px 10px;text-align:left;border-color:var(--b2);
+}
+/* totals row */
+.totals-row td{
+  background:var(--bg3);font-weight:600;color:var(--w);border-top:2px solid var(--b3);
+}
+/* pct row */
+.pct-row td{
+  background:var(--bg4);font-size:10px;letter-spacing:.5px;border-top:1px solid var(--b2);
+}
+/* auto-calculated cells */
+.auto{color:var(--g2);font-style:italic;}
+/* colored rate cells */
+.rate-g{background:rgba(61,220,132,.12)!important;color:var(--green);font-weight:600;}
+.rate-y{background:rgba(245,197,24,.12)!important;color:var(--yellow);font-weight:600;}
+.rate-r{background:rgba(255,77,77,.12)!important;color:var(--red);font-weight:600;}
+
+/* Editable input cells */
+.ec{background:transparent;border:none;color:var(--w);font-family:var(--fb);font-size:12px;outline:none;width:100%;text-align:center;padding:1px 2px;border-radius:2px;transition:background .12s;}
+.ec:focus{background:rgba(255,255,255,.08);outline:1px solid var(--g3);}
+.ec::placeholder{color:var(--g4);}
+.ec-sel{background:transparent;border:none;color:var(--w);font-family:var(--fb);font-size:11px;outline:none;cursor:pointer;text-align:center;}
+
+/* Benchmark boxes */
+.bench-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px;}
+.bench-card{background:var(--bg3);border:1px solid var(--b1);border-radius:7px;padding:14px;text-align:center;}
+.bench-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:7px;}
+.bench-val{font-family:var(--fd);font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1;}
+.bench-tgt{font-size:10px;color:var(--g3);margin-top:4px;}
+.bench-bar{background:var(--b1);border-radius:3px;height:4px;margin-top:8px;overflow:hidden;}
+.bench-fill{height:100%;border-radius:3px;transition:width .5s ease;}
+
+/* Rate legend */
+.rate-legend{display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap;}
+.rl-item{display:flex;align-items:center;gap:6px;font-size:11px;}
+.rl-dot{width:10px;height:10px;border-radius:2px;}
+
+/* ── CLIENTS PANEL ── */
+.client-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg3);border:1px solid var(--b2);border-radius:7px;margin-bottom:8px;transition:border-color .15s;}
+.client-row:hover{border-color:var(--g3);}
+.client-info{display:flex;align-items:center;gap:12px;}
+.client-av{width:34px;height:34px;border-radius:50%;background:var(--w2);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:800;font-size:14px;color:var(--bg);flex-shrink:0;}
+.client-name{font-size:14px;font-weight:600;color:var(--w);}
+.client-meta{font-size:11px;color:var(--g2);margin-top:1px;}
+.client-actions{display:flex;gap:8px;align-items:center;}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;letter-spacing:.8px;text-transform:uppercase;font-weight:500;white-space:nowrap;}
+.b-g{background:rgba(61,220,132,.1);color:var(--green);}
+.b-r{background:rgba(255,77,77,.1);color:var(--red);}
+.b-y{background:rgba(245,197,24,.1);color:var(--yellow);}
+.b-w{background:rgba(255,255,255,.08);color:var(--w2);}
+.b-grey{background:rgba(255,255,255,.04);color:var(--g2);}
+
+/* Empty state */
+.empty-state{text-align:center;padding:48px 20px;color:var(--g2);}
+.empty-icon{font-size:36px;margin-bottom:12px;opacity:.4;}
+.empty-title{font-family:var(--fd);font-size:18px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--g2);margin-bottom:6px;}
+.empty-sub{font-size:12px;color:var(--g3);}
+
+/* ── INVITE PANEL ── */
+.inv-steps{display:flex;gap:0;margin-bottom:20px;}
+.inv-step{flex:1;padding:12px 16px;background:var(--bg3);border:1px solid var(--b2);font-size:11px;color:var(--g2);cursor:pointer;transition:all .12s;text-align:center;}
+.inv-step:first-child{border-radius:7px 0 0 7px;}
+.inv-step:last-child{border-radius:0 7px 7px 0;}
+.inv-step.on{background:var(--bg);color:var(--w);border-color:var(--g2);font-weight:600;}
+.inv-step-num{font-family:var(--fd);font-size:20px;font-weight:800;display:block;margin-bottom:2px;color:var(--w2);}
+.inv-form{background:var(--bg2);border:1px solid var(--b1);border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:14px;}
+.inv-field label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:5px;}
+.inv-input{width:100%;background:var(--bg3);border:1px solid var(--b2);color:var(--w);font-family:var(--fb);font-size:13px;padding:10px 13px;border-radius:6px;outline:none;transition:border-color .15s;}
+.inv-input:focus{border-color:var(--g2);}
+.inv-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.inv-result{background:var(--bg3);border:1px solid var(--b2);border-radius:8px;padding:20px;margin-top:12px;}
+.inv-code{background:var(--bg);border:1px solid var(--b2);border-radius:6px;padding:14px;font-family:monospace;font-size:12px;color:var(--g1);line-height:1.8;margin:12px 0;word-break:break-all;}
+.inv-code strong{color:var(--w2);}
+.copy-btns{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* ── SOCIAL ── */
+.soc-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
+.soc-card{background:var(--bg2);border:1px solid var(--b1);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px;}
+.soc-top{display:flex;justify-content:space-between;align-items:center;}
+.soc-plat{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--g2);}
+.soc-val{font-family:var(--fd);font-size:36px;font-weight:900;letter-spacing:-1px;line-height:1;color:var(--w2);}
+.soc-d{font-size:11px;}
+.soc-in{background:var(--bg3);border:1px solid var(--b2);color:var(--w);font-family:var(--fb);font-size:12px;padding:7px 10px;border-radius:5px;width:100%;outline:none;}
+.soc-in:focus{border-color:var(--g2);}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--b2);border-radius:12px;padding:28px;width:400px;display:flex;flex-direction:column;gap:14px;}
+.modal-title{font-family:var(--fd);font-size:20px;font-weight:800;letter-spacing:.5px;}
+.modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--g2);font-size:20px;cursor:pointer;}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px;}
+
+.ss{background:transparent;border:1px solid var(--b2);color:var(--w);font-family:var(--fb);font-size:12px;padding:5px 9px;border-radius:5px;cursor:pointer;outline:none;}
+.add-row{width:100%;padding:7px;background:transparent;border:1px dashed var(--b2);color:var(--g3);font-family:var(--fd);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:5px;margin-top:6px;transition:all .12s;}
+.add-row:hover{color:var(--w);border-color:var(--g2);}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div class="screen active" id="loginScreen">
+  <div class="auth-brand">flowly.media</div>
+  <div class="auth-title">Client<br><span>Portal</span></div>
+  <div class="auth-box">
+    <div>
+      <label class="auth-label">First and Last Name</label>
+      <input class="auth-input" id="li-name" type="text" placeholder="e.g. Jack Andersson" autocomplete="off" onkeydown="if(event.key==='Enter')login()"/>
+    </div>
+    <button class="auth-btn" onclick="login()">Enter Portal →</button>
+    <div class="auth-err" id="li-err">Name not found. Ask Jack to add you.</div>
+    <div class="auth-link" onclick="showScreen('signupScreen')">New client? <span>Request access →</span></div>
+  </div>
+</div>
+
+<!-- ═══ SIGNUP ═══ -->
+<div class="screen" id="signupScreen">
+  <div class="auth-brand">flowly.media</div>
+  <div class="auth-title">Request<br><span>Access</span></div>
+  <div class="auth-box">
+    <div>
+      <label class="auth-label">First and Last Name</label>
+      <input class="auth-input" id="su-name" type="text" placeholder="Your full name"/>
+    </div>
+    <div>
+      <label class="auth-label">Email (so Jack can confirm)</label>
+      <input class="auth-input" id="su-email" type="email" placeholder="your@email.com"/>
+    </div>
+    <div>
+      <label class="auth-label">What are you working on?</label>
+      <input class="auth-input" id="su-niche" type="text" placeholder="e.g. Fitness coaching"/>
+    </div>
+    <button class="auth-btn" onclick="submitSignup()">Send Request →</button>
+    <div class="auth-err" id="su-err" style="color:var(--green)"></div>
+    <div class="auth-link" onclick="showScreen('loginScreen')">Already have access? <span>Sign in →</span></div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div class="screen" id="appScreen">
+
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="sb-top">
+    <div class="sb-logo">flowly<span>.media</span></div>
+    <div class="sb-tag">Command Center</div>
+    <div class="sb-user">
+      <div class="sb-av" id="sb-av">J</div>
+      <div>
+        <div class="sb-uname" id="sb-name">Jack</div>
+        <div class="sb-urole" id="sb-role">Admin</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-gl">Dashboard</div>
+  <div class="sb-it on" onclick="nav('overview',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Overview</div>
+  <div class="sb-it" onclick="nav('performance',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Performance</div>
+
+  <div class="sb-gl">Tracking</div>
+  <div class="sb-it" onclick="nav('outreach',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Outreach</div>
+  <div class="sb-it" onclick="nav('sales',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>Sales</div>
+  <div class="sb-it" onclick="nav('ads',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Ads</div>
+  <div class="sb-it" onclick="nav('content',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Content</div>
+  <div class="sb-it" onclick="nav('social',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 3a10.9 10.9 0 01-3.14 1.53A4.48 4.48 0 0012 8v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>Social Growth</div>
+
+  <div class="sb-gl">Tools</div>
+  <div class="sb-it" onclick="nav('claude',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 110 20 10 10 0 010-20z"/><path d="M12 8v4l3 3"/></svg>Claude AI</div>
+
+  <div class="sb-gl admin-only">Admin</div>
+  <div class="sb-it admin-only" onclick="nav('clients',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>All Clients</div>
+  <div class="sb-it admin-only" onclick="nav('invite',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>Invite Client</div>
+
+  <div class="sb-bot">
+    <button class="sb-logout" onclick="logout()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign out
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-title" id="tb-title">Overview</div>
+      <span class="tb-sep">—</span>
+      <div class="tb-sub" id="tb-sub">March 2026</div>
+    </div>
+    <div class="tb-right">
+      <select class="ss" id="month-sel" onchange="refreshPanel()">
+        <option value="2026-03">March 2026</option>
+        <option value="2026-02">February 2026</option>
+        <option value="2026-01">January 2026</option>
+        <option value="2025-12">December 2025</option>
+        <option value="2025-11">November 2025</option>
+        <option value="2025-10">October 2025</option>
+      </select>
+      <select class="ss admin-only" id="client-sw" onchange="switchViewAs(this.value)" style="display:none;">
+        <option value="__self">My Dashboard</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div class="panel active" id="p-overview">
+      <div class="g4c">
+        <div class="kc"><div class="kc-l">Revenue</div><div class="kc-v" id="ov-rev">—</div><div class="kc-d cnt">This month</div></div>
+        <div class="kc"><div class="kc-l">Calls Booked</div><div class="kc-v" id="ov-bk">—</div><div class="kc-d cnt">From outreach</div></div>
+        <div class="kc"><div class="kc-l">Clients Closed</div><div class="kc-v" id="ov-cl">—</div><div class="kc-d cnt">New this month</div></div>
+        <div class="kc"><div class="kc-l">Close Rate</div><div class="kc-v" id="ov-cr">—</div><div class="kc-d cnt">Target 30%+</div></div>
+      </div>
+      <div class="bench-grid">
+        <div class="bench-card"><div class="bench-label">Convo → Sales Call</div><div class="bench-val cup" id="bv-css">—</div><div class="bench-tgt">Target: 15%+</div><div class="bench-bar"><div class="bench-fill" id="bf-css" style="width:0%;background:var(--green)"></div></div></div>
+        <div class="bench-card"><div class="bench-label">Show Up Rate</div><div class="bench-val" id="bv-show" style="color:var(--yellow)">—</div><div class="bench-tgt">Target: 95%+</div><div class="bench-bar"><div class="bench-fill" id="bf-show" style="width:0%;background:var(--yellow)"></div></div></div>
+        <div class="bench-card"><div class="bench-label">DM Response Rate</div><div class="bench-val cup" id="bv-dm">—</div><div class="bench-tgt">Target: 30%+</div><div class="bench-bar"><div class="bench-fill" id="bf-dm" style="width:0%;background:var(--green)"></div></div></div>
+        <div class="bench-card"><div class="bench-label">Close Rate</div><div class="bench-val cup" id="bv-close">—</div><div class="bench-tgt">Target: 30%+</div><div class="bench-bar"><div class="bench-fill" id="bf-close" style="width:0%;background:var(--green)"></div></div></div>
+      </div>
+      <div style="margin-top:12px;" class="card">
+        <div class="card-h"><div><div class="card-t">Rate Legend</div></div></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div style="background:rgba(61,220,132,.06);border:1px solid rgba(61,220,132,.2);border-radius:6px;padding:12px;text-align:center;">
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:5px;">🟢 Target Hit</div>
+            <div style="font-family:var(--fd);font-size:14px;color:var(--green);">15%+ · 95%+ · 30%+</div>
+            <div style="font-size:10px;color:var(--g2);margin-top:3px;">Convo→SS · Show · Close</div>
+          </div>
+          <div style="background:rgba(245,197,24,.06);border:1px solid rgba(245,197,24,.2);border-radius:6px;padding:12px;text-align:center;">
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--yellow);margin-bottom:5px;">🟡 Getting There</div>
+            <div style="font-family:var(--fd);font-size:14px;color:var(--yellow);">10–15% · 80–90% · 20–25%</div>
+            <div style="font-size:10px;color:var(--g2);margin-top:3px;">Convo→SS · Show · Close</div>
+          </div>
+          <div style="background:rgba(255,77,77,.06);border:1px solid rgba(255,77,77,.2);border-radius:6px;padding:12px;text-align:center;">
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:5px;">🔴 Needs Work</div>
+            <div style="font-family:var(--fd);font-size:14px;color:var(--red);">&lt;10% · &lt;80% · &lt;15%</div>
+            <div style="font-size:10px;color:var(--g2);margin-top:3px;">Convo→SS · Show · Close</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div class="panel" id="p-performance">
+
+      <!-- Who are we looking at -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div>
+          <div style="font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--w2);" id="perf-title">My Performance</div>
+          <div style="font-size:11px;color:var(--g2);margin-top:2px;" id="perf-sub">Close rate · show up rate · revenue — tracked monthly</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select class="ss" id="perf-who" onchange="renderPerformance()">
+            <option value="__self">Myself</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Big rate cards -->
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px;">
+        <div class="kc"><div class="kc-l">Revenue</div><div class="kc-v" id="pf-rev">—</div><div class="kc-d cnt" id="pf-rev-d">This month</div></div>
+        <div class="kc"><div class="kc-l">Cash Collected</div><div class="kc-v" id="pf-cash">—</div><div class="kc-d cnt">This month</div></div>
+        <div class="kc"><div class="kc-l">Calls Booked</div><div class="kc-v" id="pf-bk">—</div><div class="kc-d cnt">From outreach</div></div>
+        <div class="kc"><div class="kc-l">Calls Taken</div><div class="kc-v" id="pf-tk">—</div><div class="kc-d cnt">Showed up</div></div>
+        <div class="kc"><div class="kc-l">Closed</div><div class="kc-v" id="pf-cl">—</div><div class="kc-d cnt">New clients</div></div>
+        <div class="kc"><div class="kc-l">New Convos</div><div class="kc-v" id="pf-nc">—</div><div class="kc-d cnt">Total DMs</div></div>
+      </div>
+
+      <!-- Rate gauges -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+        <div class="bench-card">
+          <div class="bench-label">Close Rate</div>
+          <div class="bench-val" id="pf-closerate" style="color:var(--green)">—</div>
+          <div class="bench-tgt">Target: 30%+</div>
+          <div class="bench-bar"><div class="bench-fill" id="pf-closerate-bar" style="width:0%"></div></div>
+        </div>
+        <div class="bench-card">
+          <div class="bench-label">Show Up Rate</div>
+          <div class="bench-val" id="pf-showrate" style="color:var(--yellow)">—</div>
+          <div class="bench-tgt">Target: 95%+</div>
+          <div class="bench-bar"><div class="bench-fill" id="pf-showrate-bar" style="width:0%"></div></div>
+        </div>
+        <div class="bench-card">
+          <div class="bench-label">Convo → SS%</div>
+          <div class="bench-val" id="pf-css" style="color:var(--green)">—</div>
+          <div class="bench-tgt">Target: 15%+</div>
+          <div class="bench-bar"><div class="bench-fill" id="pf-css-bar" style="width:0%"></div></div>
+        </div>
+        <div class="bench-card">
+          <div class="bench-label">DM Response Rate</div>
+          <div class="bench-val" id="pf-dmr" style="color:var(--green)">—</div>
+          <div class="bench-tgt">Target: 30%+</div>
+          <div class="bench-bar"><div class="bench-fill" id="pf-dmr-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <!-- Monthly history table -->
+      <div class="card mb">
+        <div class="card-h">
+          <div><div class="card-t">Monthly Breakdown</div><div class="card-s">All key rates tracked month by month</div></div>
+        </div>
+        <div class="tbl-wrap">
+          <table id="perf-tbl">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Revenue</th>
+                <th>Cash Collected</th>
+                <th>New Convos</th>
+                <th>Calls Booked</th>
+                <th>Calls Taken</th>
+                <th>Closed</th>
+                <th>No Shows</th>
+                <th>Follow Ups</th>
+                <th>Convo→SS%</th>
+                <th>Show Up%</th>
+                <th>Close%</th>
+                <th>DM Resp%</th>
+              </tr>
+            </thead>
+            <tbody id="perf-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Admin only: client comparison table -->
+      <div class="card admin-only" id="perf-compare-card">
+        <div class="card-h"><div><div class="card-t">Client Comparison</div><div class="card-s">All clients · this month · side by side</div></div></div>
+        <div class="tbl-wrap">
+          <table id="perf-compare-tbl">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Revenue</th>
+                <th>Convos</th>
+                <th>Booked</th>
+                <th>Taken</th>
+                <th>Closed</th>
+                <th>Convo→SS%</th>
+                <th>Show Up%</th>
+                <th>Close%</th>
+                <th>Cash</th>
+              </tr>
+            </thead>
+            <tbody id="perf-compare-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- OUTREACH -->
+    <div class="panel" id="p-outreach">
+      <div class="card mb">
+        <div class="card-h">
+          <div><div class="card-t">Outreach Tracker</div><div class="card-s">Appointment Setting — Cells auto-calculate %</div></div>
+          <button class="btn btn-w btn-sm" onclick="addOutreachRows(7)">+ Add 7 Days</button>
+        </div>
+        <div class="tbl-wrap">
+          <table id="ot">
+            <thead>
+              <tr>
+                <th colspan="6" style="background:rgba(61,220,132,.1);color:var(--green);">📋 APPOINTMENT SETTING</th>
+                <th colspan="6" style="background:rgba(96,165,250,.1);color:var(--blue);">💰 SALES</th>
+              </tr>
+              <tr>
+                <th>DAY</th>
+                <th>New Convos</th>
+                <th>Source</th>
+                <th>Responded</th>
+                <th>NC→R%</th>
+                <th>Calls Booked</th>
+                <th>Calls Taken</th>
+                <th>Show Up%</th>
+                <th>No Shows</th>
+                <th>Follow Ups</th>
+                <th>Closed</th>
+                <th>Cash $</th>
+              </tr>
+            </thead>
+            <tbody id="ot-body"></tbody>
+            <tfoot>
+              <tr class="totals-row">
+                <td style="text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--g2);">TOTALS</td>
+                <td id="ot-t-nc">0</td><td>—</td>
+                <td id="ot-t-resp">0</td>
+                <td id="ot-t-ncpct" class="auto">—</td>
+                <td id="ot-t-bk">0</td>
+                <td id="ot-t-tk">0</td>
+                <td id="ot-t-show" class="auto">—</td>
+                <td id="ot-t-ns">0</td>
+                <td id="ot-t-fu">0</td>
+                <td id="ot-t-cl">0</td>
+                <td id="ot-t-cash">$0</td>
+              </tr>
+              <tr class="pct-row" id="ot-pct-row">
+                <td style="text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--g2);">RATES</td>
+                <td colspan="3"></td>
+                <td id="ot-r-ncpct">—</td>
+                <td></td>
+                <td></td>
+                <td id="ot-r-show">—</td>
+                <td colspan="2"></td>
+                <td id="ot-r-close">—</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <button class="add-row" onclick="addOutreachRows(1)">+ Add Day</button>
+      </div>
+    </div>
+
+    <!-- SALES -->
+    <div class="panel" id="p-sales">
+      <div class="card mb">
+        <div class="card-h">
+          <div><div class="card-t">Sales Tracker</div><div class="card-s">Full sales data — cells auto-calculate rates</div></div>
+          <button class="btn btn-w btn-sm" onclick="addSalesRows(7)">+ Add 7 Days</button>
+        </div>
+        <div class="tbl-wrap">
+          <table id="st">
+            <thead>
+              <tr>
+                <th>DAY</th>
+                <th>AGC Conv%</th>
+                <th>Calls Booked</th>
+                <th>Calls Taken</th>
+                <th>Show Up%</th>
+                <th>Offers Made</th>
+                <th>No Shows</th>
+                <th>Follow Ups</th>
+                <th>Closed</th>
+                <th>Close Rate%</th>
+                <th>Cash Collected</th>
+                <th>Revenue (MRR)</th>
+              </tr>
+            </thead>
+            <tbody id="st-body"></tbody>
+            <tfoot>
+              <tr class="totals-row">
+                <td style="text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--g2);">TOTALS</td>
+                <td class="auto">—</td>
+                <td id="st-t-bk">0</td><td id="st-t-tk">0</td>
+                <td id="st-t-show" class="auto">—</td>
+                <td id="st-t-off">0</td><td id="st-t-ns">0</td>
+                <td id="st-t-fu">0</td><td id="st-t-cl">0</td>
+                <td id="st-t-cr" class="auto">—</td>
+                <td id="st-t-cash">$0</td>
+                <td id="st-t-rev">$0</td>
+              </tr>
+              <tr class="pct-row">
+                <td colspan="4" style="text-align:left;font-size:9px;color:var(--g3);">Auto-calculated from daily entries above</td>
+                <td id="st-r-show">—</td>
+                <td colspan="3"></td>
+                <td id="st-r-cr">—</td>
+                <td colspan="3"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <button class="add-row" onclick="addSalesRows(1)">+ Add Day</button>
+      </div>
+    </div>
+
+    <!-- ADS -->
+    <div class="panel" id="p-ads">
+      <div class="g2c">
+        <div class="card">
+          <div class="card-h"><div><div class="card-t">Follower Ads</div><div class="card-s">Total followers · new · qualified · spend</div></div></div>
+          <div class="tbl-wrap">
+            <table id="fa-t">
+              <thead><tr><th>Date</th><th>Platform</th><th>Total Followers</th><th>New Followers</th><th>Qual. Followers</th><th>Ad Spend $</th><th>Cost/Qual Follow</th><th>Content Posted</th></tr></thead>
+              <tbody id="fa-body"></tbody>
+            </table>
+          </div>
+          <button class="add-row" onclick="addFAd()">+ Add Entry</button>
+        </div>
+        <div class="card">
+          <div class="card-h"><div><div class="card-t">Lead Ads / VSL</div><div class="card-s">Conversion campaigns · CPL · ROAS</div></div></div>
+          <div class="tbl-wrap">
+            <table id="la-t">
+              <thead><tr><th>Date</th><th>Platform</th><th>Ad Spend $</th><th>New Convos</th><th>Qual. Leads</th><th>CPL $</th><th>Revenue</th><th>ROAS</th></tr></thead>
+              <tbody id="la-body"></tbody>
+            </table>
+          </div>
+          <button class="add-row" onclick="addLAd()">+ Add Entry</button>
+        </div>
+      </div>
+      <div class="g4c">
+        <div class="kc"><div class="kc-l">Total Spend</div><div class="kc-v" id="ads-spend">$0</div></div>
+        <div class="kc"><div class="kc-l">Total Leads</div><div class="kc-v" id="ads-leads">0</div></div>
+        <div class="kc"><div class="kc-l">Avg CPL</div><div class="kc-v" id="ads-cpl">—</div></div>
+        <div class="kc"><div class="kc-l">ROAS</div><div class="kc-v" id="ads-roas">—</div></div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="panel" id="p-content">
+      <div class="card mb">
+        <div class="card-h">
+          <div><div class="card-t">Content Tracker</div><div class="card-s">Posts · views · DMs · lead attribution</div></div>
+          <button class="btn btn-w btn-sm" onclick="addContent()">+ Add Post</button>
+        </div>
+        <div class="tbl-wrap">
+          <table id="ct">
+            <thead><tr><th>Date</th><th>Platform</th><th>Format</th><th>Hook / Title</th><th>Status</th><th>Views</th><th>Likes</th><th>Comments</th><th>DMs</th><th>Leads</th><th>Notes</th></tr></thead>
+            <tbody id="ct-body"></tbody>
+          </table>
+        </div>
+        <button class="add-row" onclick="addContent()">+ Add Post</button>
+      </div>
+      <div class="g3c">
+        <div class="kc"><div class="kc-l">Posts This Month</div><div class="kc-v" id="ct-count">0</div><div class="kc-d cnt">Target: 20+</div></div>
+        <div class="kc"><div class="kc-l">Total Views</div><div class="kc-v" id="ct-views">0</div></div>
+        <div class="kc"><div class="kc-l">DMs / Leads</div><div class="kc-v" id="ct-dms">0</div></div>
+      </div>
+    </div>
+
+    <!-- SOCIAL -->
+    <div class="panel" id="p-social">
+      <div class="soc-cards">
+        <div class="soc-card">
+          <div class="soc-top"><div class="soc-plat">Instagram</div><span>📸</span></div>
+          <div><div class="soc-val" id="ig-v">—</div><div class="soc-d cnt" id="ig-d">Enter current count</div></div>
+          <input class="soc-in" id="ig-in" type="number" placeholder="Update follower count..." oninput="updateSoc('ig')"/>
+        </div>
+        <div class="soc-card">
+          <div class="soc-top"><div class="soc-plat">TikTok</div><span>🎵</span></div>
+          <div><div class="soc-val" id="tt-v">—</div><div class="soc-d cnt" id="tt-d">Enter current count</div></div>
+          <input class="soc-in" id="tt-in" type="number" placeholder="Update follower count..." oninput="updateSoc('tt')"/>
+        </div>
+        <div class="soc-card">
+          <div class="soc-top"><div class="soc-plat">YouTube</div><span>▶️</span></div>
+          <div><div class="soc-val" id="yt-v">—</div><div class="soc-d cnt" id="yt-d">Enter current count</div></div>
+          <input class="soc-in" id="yt-in" type="number" placeholder="Update subscriber count..." oninput="updateSoc('yt')"/>
+        </div>
+      </div>
+      <div class="card mb">
+        <div class="card-h"><div><div class="card-t">Monthly Growth Log</div><div class="card-s">Track all platforms — changes auto-calculate</div></div></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Month</th><th>📸 Instagram</th><th>IG Change</th><th>🎵 TikTok</th><th>TT Change</th><th>▶️ YouTube</th><th>YT Change</th><th>Notes</th></tr></thead>
+            <tbody id="soc-body"></tbody>
+          </table>
+        </div>
+        <button class="add-row" onclick="addSocRow()">+ Add Month</button>
+      </div>
+    </div>
+
+    <!-- CLAUDE AI -->
+    <div class="panel" id="p-claude">
+      <!-- Big CTA bar at top -->
+      <div style="background:var(--w2);border-radius:8px;padding:16px 20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+        <div>
+          <div style="font-family:var(--fd);font-size:18px;font-weight:900;letter-spacing:.5px;color:var(--bg);text-transform:uppercase;">💬 Chat with Claude AI</div>
+          <div style="font-size:12px;color:#444;margin-top:2px;">Scripts · hooks · DM copy · content plans · strategy — ask anything</div>
+        </div>
+        <a href="https://claude.ai/new" target="_blank" style="background:var(--bg);color:var(--w2);text-decoration:none;padding:12px 22px;border-radius:7px;font-family:var(--fd);font-size:15px;font-weight:800;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;transition:opacity .15s;display:inline-block;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">
+          Open Claude → New Tab ↗
+        </a>
+      </div>
+
+      <!-- Iframe attempt -->
+      <div style="border:1px solid var(--b2);border-radius:8px;overflow:hidden;height:calc(100vh - 200px);min-height:480px;background:var(--bg2);position:relative;">
+        <iframe
+          src="https://claude.ai/new"
+          style="width:100%;height:100%;border:none;display:block;"
+          allow="clipboard-read; clipboard-write; microphone"
+          title="Claude AI"
+          id="claude-frame"
+          onload="document.getElementById('claude-frame-notice').style.display='none'"
+        ></iframe>
+        <!-- Shown if iframe is blocked -->
+        <div id="claude-frame-notice" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--bg2);pointer-events:none;">
+          <div style="font-size:32px;">🤖</div>
+          <div style="font-family:var(--fd);font-size:16px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--w2);">Loading Claude...</div>
+          <div style="font-size:12px;color:var(--g2);text-align:center;max-width:300px;">If this stays blank, your browser is blocking the embed.<br>Use the button above to open Claude in a new tab.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALL CLIENTS (admin) -->
+    <div class="panel" id="p-clients">
+      <div class="card mb">
+        <div class="card-h">
+          <div><div class="card-t">All Clients</div><div class="card-s" id="clients-count">0 active clients</div></div>
+          <button class="btn btn-w btn-sm" onclick="nav('invite',document.querySelector('[onclick*=invite]'))">+ Invite Client</button>
+        </div>
+        <div id="clients-list"></div>
+      </div>
+
+      <!-- Pending signups -->
+      <div class="card">
+        <div class="card-h"><div><div class="card-t">Access Requests</div><div class="card-s">People who signed up — approve to add them</div></div></div>
+        <div id="requests-list">
+          <div class="empty-state"><div class="empty-icon">📬</div><div class="empty-title">No Pending Requests</div><div class="empty-sub">When someone fills the signup form, they'll appear here</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVITE (admin) -->
+    <div class="panel" id="p-invite">
+      <div class="g2c" style="align-items:start;">
+        <div>
+          <div class="card mb">
+            <div class="card-h"><div><div class="card-t">Add New Client</div><div class="card-s">Fill in their info and generate an invite</div></div></div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div class="inv-field"><label>First and Last Name</label><input class="inv-input" id="inv-name" placeholder="e.g. Sara Nilsson"/></div>
+              <div class="inv-field"><label>Email Address</label><input class="inv-input" id="inv-email" type="email" placeholder="sara@email.com"/></div>
+              <div class="inv-field"><label>Niche / What they do</label><input class="inv-input" id="inv-niche" placeholder="e.g. Fitness Coach"/></div>
+              <div style="display:flex;gap:8px;margin-top:4px;">
+                <button class="btn btn-w" onclick="generateInvite()">Generate Invite →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" id="inv-result-card" style="display:none;">
+            <div class="card-h"><div><div class="card-t">✅ Client Added</div><div class="card-s">Share one of these with them</div></div></div>
+
+            <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:8px;">Portal Link + Login</div>
+            <div class="inv-code" id="inv-msg"></div>
+
+            <div class="copy-btns" id="inv-btns"></div>
+
+            <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--b1);">
+              <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:8px;">Email Template</div>
+              <div class="inv-code" id="inv-email-tmpl"></div>
+              <button class="btn btn-o btn-sm" onclick="copyEl('inv-email-tmpl')">Copy Email</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px;">
+            <div class="card-h"><div><div class="card-t">How It Works</div></div></div>
+            <div style="display:flex;flex-direction:column;gap:10px;font-size:12px;color:var(--g2);line-height:1.7;">
+              <div><strong style="color:var(--w);">1. Add client</strong> — fill in name, email, niche and fee above</div>
+              <div><strong style="color:var(--w);">2. Share the invite</strong> — copy the link or email template and send it</div>
+              <div><strong style="color:var(--w);">3. They log in</strong> — they type their full name on the login screen</div>
+              <div><strong style="color:var(--w);">4. They fill in data</strong> — outreach, sales, content, social daily</div>
+              <div><strong style="color:var(--w);">5. You see everything</strong> — switch between clients in the top bar</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+</div><!-- /appScreen -->
+
+<!-- Client data modal -->
+<div class="modal-overlay" id="client-modal" onclick="if(event.target===this)this.classList.remove('open')"></div>
+
+<!-- Toast -->
+<div id="toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--w2);color:var(--bg);font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 22px;border-radius:7px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9999;"></div>
+
+<script>
+// ══════════════════════════════════════
+//  STATE — persisted in localStorage
+// ══════════════════════════════════════
+function ls(k,v){ if(v!==undefined){localStorage.setItem(k,JSON.stringify(v));return v;} const s=localStorage.getItem(k); return s?JSON.parse(s):null; }
+
+// Users store
+function getUsers(){ return ls('fl_users')||{}; }
+function saveUsers(u){ ls('fl_users',u); }
+function getUser(id){ return getUsers()[id]||null; }
+
+// Data store per user/month/type
+function getD(uid,month,type){ return ls(`fl_${uid}_${month}_${type}`)||null; }
+function saveD(uid,month,type,data){ ls(`fl_${uid}_${month}_${type}`,data); }
+function curD(type){ return getD(VIEW_AS||CUR.id, getMonth(), type); }
+function saveCurD(type,data){ saveD(VIEW_AS||CUR.id, getMonth(), type, data); }
+
+// Pending signups
+function getRequests(){ return ls('fl_requests')||[]; }
+function saveRequests(r){ ls('fl_requests',r); }
+
+let CUR = null; // logged in user
+let VIEW_AS = null; // admin viewing as
+let ACTIVE_PANEL = 'overview';
+
+// ══════════════════════════════════════
+//  AUTO-LOGIN FROM INVITE LINK
+//  Reads ?login=Name from the URL and logs them in automatically
+// ══════════════════════════════════════
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const autoName = params.get('login');
+  if(!autoName) return;
+  // Wait for DOM then attempt login
+  document.addEventListener('DOMContentLoaded', function(){
+    const users = getUsers();
+    const match = Object.values(users).find(u=>u.name.toLowerCase()===autoName.toLowerCase());
+    if(match){
+      CUR = match; VIEW_AS = null;
+      startApp();
+      // Clean up URL so it doesn't re-trigger on reload
+      history.replaceState({}, '', window.location.pathname);
+    } else {
+      // Pre-fill the name field so they can see what was expected
+      const inp = document.getElementById('li-name');
+      if(inp){ inp.value = autoName; }
+      const err = document.getElementById('li-err');
+      if(err){ err.textContent = 'Ask Jack to add you before using this link.'; err.style.display='block'; }
+    }
+  });
+})();
+
+// Bootstrap admin on first run
+(function(){
+  const u = getUsers();
+  if(!u['jack']){
+    u['jack'] = { id:'jack', name:'Jack Flowly', role:'admin', niche:'Agency', fee:0, email:'jack@flowly.media', added: new Date().toISOString() };
+    saveUsers(u);
+  }
+})();
+
+// ══════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function login(){
+  const name = document.getElementById('li-name').value.trim();
+  const err = document.getElementById('li-err');
+  err.style.display='none';
+  if(!name){ err.textContent='Please enter your name.'; err.style.display='block'; return; }
+  const users = getUsers();
+  const match = Object.values(users).find(u=>u.name.toLowerCase()===name.toLowerCase());
+  if(match){
+    CUR = match; VIEW_AS = null;
+    startApp();
+  } else {
+    err.style.display='block';
+  }
+}
+
+function submitSignup(){
+  const name  = document.getElementById('su-name').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const niche = document.getElementById('su-niche').value.trim();
+  const err   = document.getElementById('su-err');
+  if(!name||!email){ err.textContent='Please fill in your name and email.'; err.style.color='var(--red)'; err.style.display='block'; return; }
+  const reqs = getRequests();
+  reqs.push({ name, email, niche, submitted: new Date().toISOString() });
+  saveRequests(reqs);
+  err.textContent = '✅ Request sent! Jack will add you and send your login details.';
+  err.style.color='var(--green)'; err.style.display='block';
+  setTimeout(()=>showScreen('loginScreen'),3000);
+}
+
+function startApp(){
+  document.getElementById('loginScreen').querySelector('#li-name').value='';
+  showScreen('appScreen');
+  document.getElementById('sb-av').textContent = CUR.name[0].toUpperCase();
+  document.getElementById('sb-name').textContent = CUR.name.split(' ')[0];
+  document.getElementById('sb-role').textContent = CUR.role==='admin'?'Admin':'Client';
+  if(CUR.role==='admin'){
+    document.body.classList.add('is-admin');
+    document.querySelectorAll('.admin-only').forEach(el=>el.style.display='block');
+    document.getElementById('client-sw').style.display='inline-block';
+    rebuildClientSwitch();
+  }
+  initSocialData();
+  nav('overview', document.querySelector('.sb-it'));
+}
+
+function logout(){
+  CUR=null; VIEW_AS=null;
+  document.body.classList.remove('is-admin');
+  document.querySelectorAll('.admin-only').forEach(el=>el.style.display='none');
+  document.getElementById('client-sw').style.display='none';
+  showScreen('loginScreen');
+}
+
+// ══════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════
+const panelMeta={
+  overview:['Overview','This month at a glance'],
+  performance:['Performance','Close rate · show up rate · revenue'],
+  outreach:['Outreach Tracker','Appointment setting · daily'],
+  sales:['Sales Tracker','Calls · closes · revenue'],
+  ads:['Ads Dashboard','Follower & lead campaigns'],
+  content:['Content Tracker','Posts · performance · leads'],
+  social:['Social Growth','IG · TikTok · YouTube'],
+  claude:['Claude AI','Your content & strategy coach'],
+  clients:['All Clients','Admin view'],
+  invite:['Invite Client','Add a new client to the portal'],
+};
+
+function nav(id, el){
+  ACTIVE_PANEL=id;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('p-'+id)?.classList.add('active');
+  document.querySelectorAll('.sb-it').forEach(i=>i.classList.remove('on'));
+  if(el) el.classList.add('on');
+  const m=panelMeta[id]||[id,''];
+  document.getElementById('tb-title').textContent=m[0];
+  document.getElementById('tb-sub').textContent=m[1];
+  renderPanel(id);
+}
+
+function renderPanel(id){
+  const r={
+    overview:renderOverview, performance:renderPerformance,
+    outreach:renderOutreach, sales:renderSales,
+    ads:renderAds, content:renderContent, social:renderSocial,
+    clients:renderClients, invite:()=>{},
+  };
+  if(r[id]) r[id]();
+}
+
+function refreshPanel(){ renderPanel(ACTIVE_PANEL); }
+
+// ══════════════════════════════════════
+//  CLIENT SWITCHING (admin)
+// ══════════════════════════════════════
+function switchViewAs(val){
+  VIEW_AS = (val==='__self') ? null : val;
+  refreshPanel();
+  initSocialData();
+}
+
+function rebuildClientSwitch(){
+  const sel = document.getElementById('client-sw');
+  sel.innerHTML='<option value="__self">My Dashboard</option>';
+  const users = getUsers();
+  Object.values(users).filter(u=>u.role==='client').forEach(u=>{
+    const o=document.createElement('option');
+    o.value=u.id; o.textContent=u.name;
+    sel.appendChild(o);
+  });
+  // Also rebuild perf-who if it exists
+  const ps=document.getElementById('perf-who');
+  if(ps){
+    ps.innerHTML='<option value="__self">Myself</option>';
+    Object.values(users).filter(u=>u.role==='client').forEach(u=>{
+      const o=document.createElement('option');
+      o.value=u.id; o.textContent=u.name;
+      ps.appendChild(o);
+    });
+  }
+}
+
+// ══════════════════════════════════════
+//  MONTH
+// ══════════════════════════════════════
+function getMonth(){ return document.getElementById('month-sel')?.value||'2026-03'; }
+function monthLabel(){ return document.getElementById('month-sel')?.options[document.getElementById('month-sel').selectedIndex]?.text||'March 2026'; }
+
+// ══════════════════════════════════════
+//  PERFORMANCE TRACKER
+// ══════════════════════════════════════
+const MONTHS = [
+  {val:'2025-10',label:'Oct 2025'},{val:'2025-11',label:'Nov 2025'},
+  {val:'2025-12',label:'Dec 2025'},{val:'2026-01',label:'Jan 2026'},
+  {val:'2026-02',label:'Feb 2026'},{val:'2026-03',label:'Mar 2026'},
+];
+
+function getStatsForUser(uid, month){
+  const or = getD(uid, month, 'outreach') || [];
+  const st = getD(uid, month, 'sales') || [];
+  const nc  = or.reduce((s,r)=>s+(r.nc||0),0);
+  const resp= or.reduce((s,r)=>s+(r.resp||0),0);
+  const bk  = or.reduce((s,r)=>s+(r.bk||0),0);
+  const tk  = or.reduce((s,r)=>s+(r.tk||0),0);
+  const ns  = or.reduce((s,r)=>s+(r.ns||0),0);
+  const fu  = or.reduce((s,r)=>s+(r.fu||0),0);
+  const cl  = st.reduce((s,r)=>s+(r.cl||0),0) || or.reduce((s,r)=>s+(r.cl||0),0);
+  const cash= st.reduce((s,r)=>s+(r.cash||0),0) || or.reduce((s,r)=>s+(r.cash||0),0);
+  const rev = st.reduce((s,r)=>s+(r.rev||0),0);
+  const showRate  = bk>0 ? Math.round(tk/bk*100) : 0;
+  const closeRate = tk>0 ? Math.round(cl/tk*100) : 0;
+  const cssRate   = nc>0 ? Math.round(bk/nc*100) : 0;
+  const dmRate    = nc>0 ? Math.round(resp/nc*100): 0;
+  return {nc,resp,bk,tk,ns,fu,cl,cash,rev,showRate,closeRate,cssRate,dmRate};
+}
+
+function rateClass(v, good, ok){
+  return v>=good?'rate-g':v>=ok?'rate-y':'rate-r';
+}
+
+function renderPerformance(){
+  // Populate the who-selector for admins
+  const sel = document.getElementById('perf-who');
+  if(sel && CUR?.role==='admin'){
+    const users = getUsers();
+    const clients = Object.values(users).filter(u=>u.role==='client');
+    // Rebuild options
+    sel.innerHTML = '<option value="__self">Myself</option>';
+    clients.forEach(u=>{
+      const o = document.createElement('option');
+      o.value = u.id; o.textContent = u.name;
+      sel.appendChild(o);
+    });
+  }
+
+  const whoVal = document.getElementById('perf-who')?.value || '__self';
+  const uid = whoVal === '__self' ? (VIEW_AS || CUR?.id) : whoVal;
+  const uName = uid === CUR?.id ? 'My Performance' : (getUser(uid)?.name || 'Client');
+  const curMonth = getMonth();
+
+  document.getElementById('perf-title').textContent = uid===CUR?.id ? 'My Performance' : uName+"'s Performance";
+  document.getElementById('perf-sub').textContent = 'Close rate · show up rate · revenue — tracked monthly';
+
+  // Current month stats
+  const s = getStatsForUser(uid, curMonth);
+
+  // Big cards
+  const t2=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  t2('pf-rev', s.rev>0?'$'+s.rev.toLocaleString():(s.cash>0?'$'+s.cash.toLocaleString():'—'));
+  t2('pf-cash', s.cash>0?'$'+s.cash.toLocaleString():'—');
+  t2('pf-bk', s.bk||'—');
+  t2('pf-tk', s.tk||'—');
+  t2('pf-cl', s.cl||'—');
+  t2('pf-nc', s.nc||'—');
+
+  // Rate gauges with colour
+  function setGauge(valId, barId, val, suffix, target, okTarget){
+    const ve=document.getElementById(valId), be=document.getElementById(barId);
+    if(!ve||!be) return;
+    ve.textContent = val ? val+suffix : '—';
+    const pct = Math.min(100, target>0?Math.round(val/target*100):0);
+    be.style.width = pct+'%';
+    const col = val>=target?'var(--green)':val>=okTarget?'var(--yellow)':'var(--red)';
+    ve.style.color = col; be.style.background = col;
+  }
+  setGauge('pf-closerate','pf-closerate-bar', s.closeRate,'%',30,20);
+  setGauge('pf-showrate', 'pf-showrate-bar',  s.showRate, '%',95,80);
+  setGauge('pf-css',      'pf-css-bar',        s.cssRate,  '%',15,10);
+  setGauge('pf-dmr',      'pf-dmr-bar',        s.dmRate,   '%',30,15);
+
+  // Monthly history table
+  const body = document.getElementById('perf-body');
+  if(body){
+    body.innerHTML='';
+    MONTHS.forEach(m=>{
+      const ms = getStatsForUser(uid, m.val);
+      const hasAny = ms.nc>0||ms.bk>0||ms.cl>0||ms.cash>0;
+      body.innerHTML += `<tr style="${!hasAny?'opacity:.35':''}">
+        <td style="font-weight:600;white-space:nowrap;">${m.label}</td>
+        <td style="color:${ms.rev>0?'var(--green)':'var(--g2)'};">${ms.rev>0?'$'+ms.rev.toLocaleString():ms.cash>0?'$'+ms.cash.toLocaleString():'—'}</td>
+        <td>${ms.cash>0?'$'+ms.cash.toLocaleString():'—'}</td>
+        <td>${ms.nc||'—'}</td>
+        <td>${ms.bk||'—'}</td>
+        <td>${ms.tk||'—'}</td>
+        <td style="color:${ms.cl>0?'var(--green)':'inherit'};">${ms.cl||'—'}</td>
+        <td>${ms.ns||'—'}</td>
+        <td>${ms.fu||'—'}</td>
+        <td class="${ms.cssRate?rateClass(ms.cssRate,15,10):''}">${ms.cssRate?ms.cssRate+'%':'—'}</td>
+        <td class="${ms.showRate?rateClass(ms.showRate,95,80):''}">${ms.showRate?ms.showRate+'%':'—'}</td>
+        <td class="${ms.closeRate?rateClass(ms.closeRate,30,20):''}">${ms.closeRate?ms.closeRate+'%':'—'}</td>
+        <td class="${ms.dmRate?rateClass(ms.dmRate,30,15):''}">${ms.dmRate?ms.dmRate+'%':'—'}</td>
+      </tr>`;
+    });
+    if(!body.innerHTML.trim()) body.innerHTML=`<tr><td colspan="13" style="text-align:center;color:var(--g3);padding:20px;">No data entered yet — fill in your outreach and sales trackers</td></tr>`;
+  }
+
+  // Client comparison (admin only)
+  if(CUR?.role==='admin'){
+    const cmpBody = document.getElementById('perf-compare-body');
+    if(cmpBody){
+      const users = getUsers();
+      const all = Object.values(users); // include admin (jack) + clients
+      cmpBody.innerHTML='';
+      all.forEach(u=>{
+        const us = getStatsForUser(u.id, curMonth);
+        const hasAny = us.nc>0||us.bk>0||us.cl>0||us.cash>0;
+        cmpBody.innerHTML+=`<tr style="${!hasAny?'opacity:.35':''}">
+          <td>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:26px;height:26px;border-radius:50%;background:var(--w2);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:800;font-size:11px;color:var(--bg);flex-shrink:0;">${u.name[0]}</div>
+              <div>
+                <div style="font-weight:600;font-size:12px;">${u.name}</div>
+                <div style="font-size:10px;color:var(--g2);">${u.role==='admin'?'Admin':u.niche||'Client'}</div>
+              </div>
+            </div>
+          </td>
+          <td style="color:${us.rev>0?'var(--green)':'inherit'};">${us.rev>0?'$'+us.rev.toLocaleString():us.cash>0?'$'+us.cash.toLocaleString():'—'}</td>
+          <td>${us.nc||'—'}</td>
+          <td>${us.bk||'—'}</td>
+          <td>${us.tk||'—'}</td>
+          <td style="color:${us.cl>0?'var(--green)':'inherit'};font-weight:${us.cl>0?'600':'400'};">${us.cl||'—'}</td>
+          <td class="${us.cssRate?rateClass(us.cssRate,15,10):''}">${us.cssRate?us.cssRate+'%':'—'}</td>
+          <td class="${us.showRate?rateClass(us.showRate,95,80):''}">${us.showRate?us.showRate+'%':'—'}</td>
+          <td class="${us.closeRate?rateClass(us.closeRate,30,20):''}">${us.closeRate?us.closeRate+'%':'—'}</td>
+          <td>${us.cash>0?'$'+us.cash.toLocaleString():'—'}</td>
+        </tr>`;
+      });
+      if(!cmpBody.innerHTML.trim()) cmpBody.innerHTML=`<tr><td colspan="10" style="text-align:center;color:var(--g3);padding:20px;">No clients added yet</td></tr>`;
+    }
+  }
+}
+
+// ══════════════════════════════════════
+//  OUTREACH TABLE
+// ══════════════════════════════════════
+function getOutreach(){
+  return curD('outreach') || [];
+}
+function saveOutreach(d){ saveCurD('outreach',d); }
+
+function addOutreachRows(n){
+  const d=getOutreach();
+  const start=d.length+1;
+  for(let i=0;i<n;i++) d.push({day:start+i,nc:0,src:'instagram',resp:0,bk:0,tk:0,ns:0,fu:0,cl:0,cash:0});
+  saveOutreach(d); renderOutreach();
+}
+
+function renderOutreach(){
+  const d=getOutreach();
+  const body=document.getElementById('ot-body');
+  if(!body)return;
+  body.innerHTML='';
+  let tNC=0,tR=0,tBK=0,tTK=0,tNS=0,tFU=0,tCL=0,tCash=0;
+  d.forEach((row,i)=>{
+    const ncpct=row.resp>0&&row.nc>0?Math.round(row.resp/row.nc*100):null;
+    const show=row.tk>0&&row.bk>0?Math.round(row.tk/row.bk*100):null;
+    const ncClass=ncpct===null?'':ncpct>=15?'rate-g':ncpct>=10?'rate-y':'rate-r';
+    const showClass=show===null?'':show>=95?'rate-g':show>=80?'rate-y':'rate-r';
+    body.innerHTML+=`<tr>
+      <td style="color:var(--g3);font-size:11px;">${row.day}</td>
+      <td><input class="ec" style="width:48px;" value="${row.nc||''}" placeholder="0" oninput="updOR(${i},'nc',+this.value||0)"/></td>
+      <td><select class="ec-sel" onchange="updOR(${i},'src',this.value)">
+        <option ${row.src==='instagram'?'selected':''}>instagram</option>
+        <option ${row.src==='tiktok'?'selected':''}>tiktok</option>
+        <option ${row.src==='facebook'?'selected':''}>facebook</option>
+        <option ${row.src==='email'?'selected':''}>email</option>
+        <option ${row.src==='other'?'selected':''}>other</option>
+      </select></td>
+      <td><input class="ec" style="width:48px;" value="${row.resp||''}" placeholder="0" oninput="updOR(${i},'resp',+this.value||0)"/></td>
+      <td class="${ncClass}">${ncpct!==null?ncpct+'%':'—'}</td>
+      <td><input class="ec" style="width:48px;" value="${row.bk||''}" placeholder="0" oninput="updOR(${i},'bk',+this.value||0)"/></td>
+      <td><input class="ec" style="width:48px;" value="${row.tk||''}" placeholder="0" oninput="updOR(${i},'tk',+this.value||0)"/></td>
+      <td class="${showClass}">${show!==null?show+'%':'—'}</td>
+      <td><input class="ec" style="width:40px;" value="${row.ns||''}" placeholder="0" oninput="updOR(${i},'ns',+this.value||0)"/></td>
+      <td><input class="ec" style="width:40px;" value="${row.fu||''}" placeholder="0" oninput="updOR(${i},'fu',+this.value||0)"/></td>
+      <td><input class="ec" style="width:40px;" value="${row.cl||''}" placeholder="0" oninput="updOR(${i},'cl',+this.value||0)"/></td>
+      <td><input class="ec" style="width:60px;" value="${row.cash||''}" placeholder="0" oninput="updOR(${i},'cash',+this.value||0)"/></td>
+    </tr>`;
+    tNC+=row.nc||0; tR+=row.resp||0; tBK+=row.bk||0; tTK+=row.tk||0;
+    tNS+=row.ns||0; tFU+=row.fu||0; tCL+=row.cl||0; tCash+=row.cash||0;
+  });
+  t('ot-t-nc',tNC); t('ot-t-resp',tR); t('ot-t-bk',tBK); t('ot-t-tk',tTK);
+  t('ot-t-ns',tNS); t('ot-t-fu',tFU); t('ot-t-cl',tCL); t('ot-t-cash','$'+fmt(tCash));
+  const ncpct=tNC>0?Math.round(tR/tNC*100):0;
+  const show=tBK>0?Math.round(tTK/tBK*100):0;
+  const close=tTK>0?Math.round(tCL/tTK*100):0;
+  const dmr=tNC>0?Math.round(tR/tNC*100):0;
+  t('ot-t-ncpct',ncpct?ncpct+'%':'—');
+  t('ot-t-show',show?show+'%':'—');
+  // pct row with color
+  const rp=document.getElementById('ot-r-ncpct');
+  if(rp){rp.textContent=ncpct?ncpct+'%':'—';rp.className=ncpct>=15?'rate-g':ncpct>=10?'rate-y':'rate-r';}
+  const rs=document.getElementById('ot-r-show');
+  if(rs){rs.textContent=show?show+'%':'—';rs.className=show>=95?'rate-g':show>=80?'rate-y':'rate-r';}
+  const rc=document.getElementById('ot-r-close');
+  if(rc){rc.textContent=close?close+'%':'—';rc.className=close>=30?'rate-g':close>=20?'rate-y':'rate-r';}
+  updateOverview(tNC,tR,tBK,tTK,tCL,tCash,dmr,show,close,ncpct);
+}
+
+function updOR(i,k,v){
+  const d=getOutreach(); d[i][k]=v; saveOutreach(d); renderOutreach();
+}
+
+// ══════════════════════════════════════
+//  SALES TABLE
+// ══════════════════════════════════════
+function getSales(){ return curD('sales')||[]; }
+function saveSales(d){ saveCurD('sales',d); }
+
+function addSalesRows(n){
+  const d=getSales(); const start=d.length+1;
+  for(let i=0;i<n;i++) d.push({day:start+i,bk:0,tk:0,off:0,ns:0,fu:0,cl:0,cash:0,rev:0});
+  saveSales(d); renderSales();
+}
+
+function renderSales(){
+  const d=getSales();
+  const body=document.getElementById('st-body');
+  if(!body)return;
+  body.innerHTML='';
+  let tBK=0,tTK=0,tOFF=0,tNS=0,tFU=0,tCL=0,tCash=0,tRev=0;
+  d.forEach((row,i)=>{
+    const show=row.bk>0?Math.round(row.tk/row.bk*100):null;
+    const cr=row.tk>0?Math.round(row.cl/row.tk*100):null;
+    const showC=show===null?'':show>=95?'rate-g':show>=80?'rate-y':'rate-r';
+    const crC=cr===null?'':cr>=30?'rate-g':cr>=20?'rate-y':'rate-r';
+    body.innerHTML+=`<tr>
+      <td style="color:var(--g3);font-size:11px;">${row.day}</td>
+      <td class="auto">—</td>
+      <td><input class="ec" style="width:45px;" value="${row.bk||''}" placeholder="0" oninput="updST(${i},'bk',+this.value||0)"/></td>
+      <td><input class="ec" style="width:45px;" value="${row.tk||''}" placeholder="0" oninput="updST(${i},'tk',+this.value||0)"/></td>
+      <td class="${showC}">${show!==null?show+'%':'—'}</td>
+      <td><input class="ec" style="width:45px;" value="${row.off||''}" placeholder="0" oninput="updST(${i},'off',+this.value||0)"/></td>
+      <td><input class="ec" style="width:45px;" value="${row.ns||''}" placeholder="0" oninput="updST(${i},'ns',+this.value||0)"/></td>
+      <td><input class="ec" style="width:45px;" value="${row.fu||''}" placeholder="0" oninput="updST(${i},'fu',+this.value||0)"/></td>
+      <td><input class="ec" style="width:45px;" value="${row.cl||''}" placeholder="0" oninput="updST(${i},'cl',+this.value||0)"/></td>
+      <td class="${crC}">${cr!==null?cr+'%':'—'}</td>
+      <td><input class="ec" style="width:65px;" value="${row.cash||''}" placeholder="0" oninput="updST(${i},'cash',+this.value||0)"/></td>
+      <td><input class="ec" style="width:65px;" value="${row.rev||''}" placeholder="0" oninput="updST(${i},'rev',+this.value||0)"/></td>
+    </tr>`;
+    tBK+=row.bk||0;tTK+=row.tk||0;tOFF+=row.off||0;tNS+=row.ns||0;tFU+=row.fu||0;tCL+=row.cl||0;tCash+=row.cash||0;tRev+=row.rev||0;
+  });
+  t('st-t-bk',tBK);t('st-t-tk',tTK);t('st-t-off',tOFF);t('st-t-ns',tNS);
+  t('st-t-fu',tFU);t('st-t-cl',tCL);t('st-t-cash','$'+fmt(tCash));t('st-t-rev','$'+fmt(tRev));
+  const show=tBK>0?Math.round(tTK/tBK*100):0;
+  const cr=tTK>0?Math.round(tCL/tTK*100):0;
+  t('st-t-show',show?show+'%':'—');
+  t('st-t-cr',cr?cr+'%':'—');
+  const rs=document.getElementById('st-r-show');
+  if(rs){rs.textContent=show?show+'%':'—';rs.className=show>=95?'rate-g':show>=80?'rate-y':'rate-r';}
+  const rc=document.getElementById('st-r-cr');
+  if(rc){rc.textContent=cr?cr+'%':'—';rc.className=cr>=30?'rate-g':cr>=20?'rate-y':'rate-r';}
+}
+function updST(i,k,v){const d=getSales();d[i][k]=v;saveSales(d);renderSales();}
+
+// ══════════════════════════════════════
+//  OVERVIEW
+// ══════════════════════════════════════
+function updateOverview(nc,resp,bk,tk,cl,cash,dm,show,close,css){
+  t('ov-rev','$'+fmt(cash));
+  t('ov-bk',bk||'—');
+  t('ov-cl',cl||'—');
+  t('ov-cr',close?close+'%':'—');
+  bval('bv-css','bf-css',css,'%',15,100,true);
+  bval('bv-show','bf-show',show,'%',95,100,false);
+  bval('bv-dm','bf-dm',dm,'%',30,100,true);
+  bval('bv-close','bf-close',close,'%',30,100,true);
+}
+
+function bval(vid,bid,v,suf,target,max,isGreen){
+  const vel=document.getElementById(vid), bel=document.getElementById(bid);
+  if(!vel||!bel)return;
+  vel.textContent = v?v+suf:'—';
+  const pct=Math.min(100,Math.round(v/target*100));
+  bel.style.width=pct+'%';
+  const c=v>=target?'var(--green)':v>=(target*.66)?'var(--yellow)':'var(--red)';
+  vel.style.color=c; bel.style.background=c;
+}
+
+function renderOverview(){
+  const or=getOutreach();
+  const st=getSales();
+  const nc=or.reduce((s,r)=>s+(r.nc||0),0);
+  const resp=or.reduce((s,r)=>s+(r.resp||0),0);
+  const bk=or.reduce((s,r)=>s+(r.bk||0),0);
+  const tk=or.reduce((s,r)=>s+(r.tk||0),0);
+  const cl=st.reduce((s,r)=>s+(r.cl||0),0)||or.reduce((s,r)=>s+(r.cl||0),0);
+  const cash=st.reduce((s,r)=>s+(r.cash||0),0)||or.reduce((s,r)=>s+(r.cash||0),0);
+  const dm=nc>0?Math.round(resp/nc*100):0;
+  const show=bk>0?Math.round(tk/bk*100):0;
+  const close=tk>0?Math.round(cl/tk*100):0;
+  const css=nc>0?Math.round(bk/nc*100):0;
+  updateOverview(nc,resp,bk,tk,cl,cash,dm,show,close,css);
+}
+
+// ══════════════════════════════════════
+//  ADS
+// ══════════════════════════════════════
+function getFAds(){return curD('fads')||[];}
+function getLAds(){return curD('lads')||[];}
+function saveFAds(d){saveCurD('fads',d);}
+function saveLAds(d){saveCurD('lads',d);}
+
+function addFAd(){const d=getFAds();d.push({date:'',platform:'instagram',total:0,newf:0,qual:0,spend:0,content:0});saveFAds(d);renderAds();}
+function addLAd(){const d=getLAds();d.push({date:'',platform:'instagram',spend:0,convos:0,leads:0,revenue:0});saveLAds(d);renderAds();}
+
+function renderAds(){
+  const fa=getFAds(),la=getLAds();
+  const fb=document.getElementById('fa-body'),lb=document.getElementById('la-body');
+  if(!fb||!lb)return;
+  fb.innerHTML='';
+  fa.forEach((r,i)=>{
+    const cpqf=r.qual>0?(r.spend/r.qual).toFixed(2):'—';
+    fb.innerHTML+=`<tr>
+      <td><input class="ec" type="date" value="${r.date}" onchange="updFA(${i},'date',this.value)" style="width:100px;"/></td>
+      <td><select class="ec-sel" onchange="updFA(${i},'platform',this.value)"><option>instagram</option><option>tiktok</option><option>youtube</option><option>facebook</option></select></td>
+      <td><input class="ec" value="${r.total||''}" placeholder="0" oninput="updFA(${i},'total',+this.value||0)" style="width:65px;"/></td>
+      <td><input class="ec" value="${r.newf||''}" placeholder="0" oninput="updFA(${i},'newf',+this.value||0)" style="width:65px;"/></td>
+      <td><input class="ec" value="${r.qual||''}" placeholder="0" oninput="updFA(${i},'qual',+this.value||0);renderAds()" style="width:65px;"/></td>
+      <td><input class="ec" value="${r.spend||''}" placeholder="0" oninput="updFA(${i},'spend',+this.value||0);renderAds()" style="width:65px;"/></td>
+      <td class="auto">$${cpqf}</td>
+      <td><input class="ec" value="${r.content||''}" placeholder="0" oninput="updFA(${i},'content',+this.value||0)" style="width:50px;"/></td>
+    </tr>`;
+  });
+  lb.innerHTML='';
+  la.forEach((r,i)=>{
+    const cpl=r.leads>0?(r.spend/r.leads).toFixed(2):'—';
+    const roas=r.spend>0?(r.revenue/r.spend).toFixed(1)+'x':'—';
+    lb.innerHTML+=`<tr>
+      <td><input class="ec" type="date" value="${r.date}" onchange="updLA(${i},'date',this.value)" style="width:100px;"/></td>
+      <td><select class="ec-sel" onchange="updLA(${i},'platform',this.value)"><option>instagram</option><option>tiktok</option><option>facebook</option><option>youtube</option></select></td>
+      <td><input class="ec" value="${r.spend||''}" placeholder="0" oninput="updLA(${i},'spend',+this.value||0);renderAds()" style="width:65px;"/></td>
+      <td><input class="ec" value="${r.convos||''}" placeholder="0" oninput="updLA(${i},'convos',+this.value||0)" style="width:55px;"/></td>
+      <td><input class="ec" value="${r.leads||''}" placeholder="0" oninput="updLA(${i},'leads',+this.value||0);renderAds()" style="width:55px;"/></td>
+      <td class="auto">$${cpl}</td>
+      <td><input class="ec" value="${r.revenue||''}" placeholder="0" oninput="updLA(${i},'revenue',+this.value||0);renderAds()" style="width:65px;"/></td>
+      <td class="${parseFloat(roas)>=3?'rate-g':'rate-y'} auto">${roas}</td>
+    </tr>`;
+  });
+  const ts=fa.reduce((s,r)=>s+(r.spend||0),0)+la.reduce((s,r)=>s+(r.spend||0),0);
+  const tl=la.reduce((s,r)=>s+(r.leads||0),0);
+  const tr2=la.reduce((s,r)=>s+(r.revenue||0),0);
+  t('ads-spend','$'+fmt(ts)); t('ads-leads',tl);
+  t('ads-cpl',tl>0?'$'+(ts/tl).toFixed(0):'—');
+  t('ads-roas',ts>0?(tr2/ts).toFixed(1)+'x':'—');
+}
+function updFA(i,k,v){const d=getFAds();d[i][k]=v;saveFAds(d);}
+function updLA(i,k,v){const d=getLAds();d[i][k]=v;saveLAds(d);}
+
+// ══════════════════════════════════════
+//  CONTENT
+// ══════════════════════════════════════
+function getContent(){return curD('content')||[];}
+function saveContent(d){saveCurD('content',d);}
+
+function addContent(){
+  const d=getContent();
+  d.push({date:'',platform:'instagram',format:'Reel',hook:'',status:'planned',views:0,likes:0,comments:0,dms:0,leads:0,notes:''});
+  saveContent(d); renderContent();
+}
+
+function renderContent(){
+  const d=getContent();
+  const body=document.getElementById('ct-body');
+  if(!body)return;
+  body.innerHTML='';
+  d.forEach((r,i)=>{
+    const sc={'planned':'b-grey','filming':'b-y','editing':'b-w','posted':'b-g'};
+    body.innerHTML+=`<tr>
+      <td><input class="ec" type="date" value="${r.date}" onchange="updCT(${i},'date',this.value)" style="width:100px;"/></td>
+      <td><select class="ec-sel" onchange="updCT(${i},'platform',this.value)"><option>instagram</option><option>tiktok</option><option>youtube</option><option>facebook</option></select></td>
+      <td><select class="ec-sel" onchange="updCT(${i},'format',this.value)"><option>Reel</option><option>Carousel</option><option>Story</option><option>Post</option><option>Short</option><option>Long-form</option></select></td>
+      <td><input class="ec" value="${r.hook}" placeholder="Hook / title..." onchange="updCT(${i},'hook',this.value)" style="min-width:120px;text-align:left;"/></td>
+      <td><select class="ec-sel" onchange="updCT(${i},'status',this.value)"><option>planned</option><option>filming</option><option>editing</option><option>posted</option></select></td>
+      <td><input class="ec" value="${r.views||''}" placeholder="0" oninput="updCT(${i},'views',+this.value||0);renderContent()" style="width:55px;"/></td>
+      <td><input class="ec" value="${r.likes||''}" placeholder="0" oninput="updCT(${i},'likes',+this.value||0)" style="width:50px;"/></td>
+      <td><input class="ec" value="${r.comments||''}" placeholder="0" oninput="updCT(${i},'comments',+this.value||0)" style="width:55px;"/></td>
+      <td><input class="ec" value="${r.dms||''}" placeholder="0" oninput="updCT(${i},'dms',+this.value||0);renderContent()" style="width:50px;"/></td>
+      <td><input class="ec" value="${r.leads||''}" placeholder="0" oninput="updCT(${i},'leads',+this.value||0)" style="width:50px;"/></td>
+      <td><input class="ec" value="${r.notes}" placeholder="Notes..." onchange="updCT(${i},'notes',this.value)" style="min-width:90px;text-align:left;"/></td>
+    </tr>`;
+  });
+  t('ct-count',d.length);
+  t('ct-views',d.reduce((s,r)=>s+(r.views||0),0).toLocaleString());
+  t('ct-dms',d.reduce((s,r)=>s+(r.dms||0),0));
+}
+function updCT(i,k,v){const d=getContent();d[i][k]=v;saveContent(d);}
+
+// ══════════════════════════════════════
+//  SOCIAL
+// ══════════════════════════════════════
+const socPrev={ig:0,tt:0,yt:0};
+
+function initSocialData(){
+  const uid=VIEW_AS||CUR?.id;
+  if(!uid)return;
+  const stored=ls('fl_soc_curr_'+uid);
+  if(stored){
+    Object.assign(socPrev,stored.prev||{});
+    ['ig','tt','yt'].forEach(p=>{
+      const el=document.getElementById(p+'-v');
+      if(el) el.textContent=stored[p]?(+stored[p]).toLocaleString():'—';
+    });
+  }
+}
+
+function updateSoc(p){
+  const v=+document.getElementById(p+'-in').value||0;
+  const uid=VIEW_AS||CUR?.id;
+  const stored=ls('fl_soc_curr_'+uid)||{};
+  stored[p]=v;
+  ls('fl_soc_curr_'+uid,stored);
+  document.getElementById(p+'-v').textContent=v.toLocaleString();
+  const prev=socPrev[p]||0;
+  const diff=v-prev;
+  const el=document.getElementById(p+'-d');
+  el.textContent=(diff>=0?'+':'')+diff.toLocaleString()+' vs last month';
+  el.className='soc-d '+(diff>=0?'cup':'cdn');
+}
+
+function getSocRows(){return curD('soc')||[];}
+function saveSocRows(d){saveCurD('soc',d);}
+
+function addSocRow(){
+  const d=getSocRows();
+  d.push({month:'',ig:0,tt:0,yt:0,notes:''});
+  saveSocRows(d); renderSocial();
+}
+
+function renderSocial(){
+  const d=getSocRows();
+  const body=document.getElementById('soc-body');
+  if(!body)return;
+  body.innerHTML='';
+  d.forEach((r,i)=>{
+    const igD=i>0?r.ig-d[i-1].ig:0;
+    const ttD=i>0?r.tt-d[i-1].tt:0;
+    const ytD=i>0?r.yt-d[i-1].yt:0;
+    body.innerHTML+=`<tr>
+      <td><input class="ec" value="${r.month}" placeholder="e.g. March 2026" onchange="updSOC(${i},'month',this.value)" style="min-width:90px;text-align:left;"/></td>
+      <td><input class="ec" value="${r.ig||''}" placeholder="0" oninput="updSOC(${i},'ig',+this.value||0);renderSocial()" style="width:65px;"/></td>
+      <td style="color:${igD>=0?'var(--green)':'var(--red)'};font-size:11px;">${i>0?(igD>=0?'+':'')+igD.toLocaleString():'—'}</td>
+      <td><input class="ec" value="${r.tt||''}" placeholder="0" oninput="updSOC(${i},'tt',+this.value||0);renderSocial()" style="width:65px;"/></td>
+      <td style="color:${ttD>=0?'var(--green)':'var(--red)'};font-size:11px;">${i>0?(ttD>=0?'+':'')+ttD.toLocaleString():'—'}</td>
+      <td><input class="ec" value="${r.yt||''}" placeholder="0" oninput="updSOC(${i},'yt',+this.value||0);renderSocial()" style="width:65px;"/></td>
+      <td style="color:${ytD>=0?'var(--green)':'var(--red)'};font-size:11px;">${i>0?(ytD>=0?'+':'')+ytD.toLocaleString():'—'}</td>
+      <td><input class="ec" value="${r.notes}" placeholder="Notes..." onchange="updSOC(${i},'notes',this.value)" style="min-width:90px;text-align:left;"/></td>
+    </tr>`;
+  });
+}
+function updSOC(i,k,v){const d=getSocRows();d[i][k]=v;saveSocRows(d);}
+
+// ══════════════════════════════════════
+//  CLIENTS (admin)
+// ══════════════════════════════════════
+function renderClients(){
+  const users=getUsers();
+  const clients=Object.values(users).filter(u=>u.role==='client');
+  const list=document.getElementById('clients-list');
+  const count=document.getElementById('clients-count');
+  if(!list)return;
+  count.textContent=clients.length+' active client'+(clients.length!==1?'s':'');
+
+  if(clients.length===0){
+    list.innerHTML=`<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">No Clients Yet</div><div class="empty-sub">Go to Invite Client to add your first client</div></div>`;
+  } else {
+    list.innerHTML='';
+    clients.forEach(u=>{
+      // Quick stats from their data
+      const month='2026-03';
+      const or=getD(u.id,month,'outreach')||[];
+      const st=getD(u.id,month,'sales')||[];
+      const ct=getD(u.id,month,'content')||[];
+      const nc=or.reduce((s,r)=>s+(r.nc||0),0);
+      const bk=or.reduce((s,r)=>s+(r.bk||0),0);
+      const cl=st.reduce((s,r)=>s+(r.cl||0),0)||or.reduce((s,r)=>s+(r.cl||0),0);
+      const cash=st.reduce((s,r)=>s+(r.cash||0),0)||or.reduce((s,r)=>s+(r.cash||0),0);
+      const posts=ct.length;
+      const hasData=nc>0||bk>0||cl>0||posts>0;
+      list.innerHTML+=`<div class="client-row" style="flex-direction:column;align-items:stretch;gap:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="client-info">
+            <div class="client-av">${u.name[0].toUpperCase()}</div>
+            <div>
+              <div class="client-name">${u.name}</div>
+              <div class="client-meta">${u.niche||'—'} · Added ${new Date(u.added).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>
+            </div>
+          </div>
+          <div class="client-actions">
+            <span class="badge ${hasData?'b-g':'b-grey'}">${hasData?'● Has data':'No data yet'}</span>
+            <button class="btn btn-w btn-sm" onclick="openClientModal('${u.id}')">👁 View Full Dashboard</button>
+            <button class="btn btn-o btn-sm" onclick="viewClientLive('${u.id}')">Switch View →</button>
+            <button class="btn btn-r btn-sm" onclick="removeClient('${u.id}','${u.name}')">Remove</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+          <div style="background:var(--bg4);border:1px solid var(--b1);border-radius:6px;padding:10px;text-align:center;">
+            <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--g2);margin-bottom:4px;">New Convos</div>
+            <div style="font-family:var(--fd);font-size:22px;font-weight:800;color:var(--w2);">${nc||'—'}</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--b1);border-radius:6px;padding:10px;text-align:center;">
+            <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--g2);margin-bottom:4px;">Calls Booked</div>
+            <div style="font-family:var(--fd);font-size:22px;font-weight:800;color:var(--w2);">${bk||'—'}</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--b1);border-radius:6px;padding:10px;text-align:center;">
+            <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--g2);margin-bottom:4px;">Closed</div>
+            <div style="font-family:var(--fd);font-size:22px;font-weight:800;color:${cl>0?'var(--green)':'var(--w2)'};">${cl||'—'}</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--b1);border-radius:6px;padding:10px;text-align:center;">
+            <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--g2);margin-bottom:4px;">Content Posts</div>
+            <div style="font-family:var(--fd);font-size:22px;font-weight:800;color:var(--w2);">${posts||'—'}</div>
+          </div>
+        </div>
+      </div>`;
+    });
+  }
+
+  // Pending requests
+  const reqs=getRequests();
+  const rl=document.getElementById('requests-list');
+  if(!rl)return;
+  if(reqs.length===0){
+    rl.innerHTML=`<div class="empty-state"><div class="empty-icon">📬</div><div class="empty-title">No Pending Requests</div><div class="empty-sub">When someone fills the signup form, they'll appear here</div></div>`;
+  } else {
+    rl.innerHTML='';
+    reqs.forEach((r,i)=>{
+      rl.innerHTML+=`<div class="client-row">
+        <div class="client-info">
+          <div class="client-av" style="background:var(--g3);color:var(--w);">${r.name[0].toUpperCase()}</div>
+          <div>
+            <div class="client-name">${r.name}</div>
+            <div class="client-meta">${r.email} · ${r.niche||'No niche given'} · ${new Date(r.submitted).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>
+          </div>
+        </div>
+        <div class="client-actions">
+          <span class="badge b-y">Pending</span>
+          <button class="btn btn-w btn-sm" onclick="approveRequest(${i})">Approve →</button>
+          <button class="btn btn-r btn-sm" onclick="denyRequest(${i})">Deny</button>
+        </div>
+      </div>`;
+    });
+  }
+}
+
+// Switch the whole dashboard to view as a client (admin shortcut)
+function viewClientLive(uid){
+  VIEW_AS=uid;
+  document.getElementById('client-sw').value=uid;
+  nav('overview',document.querySelector('[onclick*=overview]'));
+  showToast('Viewing as '+getUser(uid).name);
+}
+
+// Open a full read-only modal of client's data
+function openClientModal(uid){
+  const u=getUser(uid);
+  if(!u)return;
+  const month='2026-03';
+  const or=getD(uid,month,'outreach')||[];
+  const st=getD(uid,month,'sales')||[];
+  const ct=getD(uid,month,'content')||[];
+  const soc=getD(uid,month,'soc')||[];
+  const fa=getD(uid,month,'fads')||[];
+  const la=getD(uid,month,'lads')||[];
+
+  // Build outreach rows
+  let orRows=or.length?or.map(r=>`<tr>
+    <td>${r.day}</td><td>${r.nc||0}</td><td>${r.src||'—'}</td><td>${r.resp||0}</td>
+    <td>${r.nc>0?Math.round((r.resp||0)/r.nc*100)+'%':'—'}</td>
+    <td>${r.bk||0}</td><td>${r.tk||0}</td>
+    <td>${r.bk>0?Math.round((r.tk||0)/r.bk*100)+'%':'—'}</td>
+    <td>${r.ns||0}</td><td>${r.fu||0}</td><td>${r.cl||0}</td><td>$${(r.cash||0).toLocaleString()}</td>
+  </tr>`).join(''):`<tr><td colspan="12" style="text-align:center;color:var(--g3);padding:20px;">No outreach data entered yet</td></tr>`;
+
+  let stRows=st.length?st.map(r=>`<tr>
+    <td>${r.day}</td><td>${r.bk||0}</td><td>${r.tk||0}</td>
+    <td>${r.bk>0?Math.round((r.tk||0)/r.bk*100)+'%':'—'}</td>
+    <td>${r.off||0}</td><td>${r.ns||0}</td><td>${r.fu||0}</td><td>${r.cl||0}</td>
+    <td>${r.tk>0?Math.round((r.cl||0)/r.tk*100)+'%':'—'}</td>
+    <td>$${(r.cash||0).toLocaleString()}</td><td>$${(r.rev||0).toLocaleString()}</td>
+  </tr>`).join(''):`<tr><td colspan="11" style="text-align:center;color:var(--g3);padding:20px;">No sales data entered yet</td></tr>`;
+
+  let ctRows=ct.length?ct.map(r=>`<tr>
+    <td>${r.date||'—'}</td><td>${r.platform||'—'}</td><td>${r.format||'—'}</td>
+    <td style="text-align:left;max-width:160px;">${r.hook||'—'}</td>
+    <td><span class="badge ${r.status==='posted'?'b-g':r.status==='editing'?'b-w':'b-grey'}">${r.status||'—'}</span></td>
+    <td>${(r.views||0).toLocaleString()}</td><td>${r.likes||0}</td><td>${r.dms||0}</td><td>${r.leads||0}</td>
+    <td style="text-align:left;">${r.notes||'—'}</td>
+  </tr>`).join(''):`<tr><td colspan="10" style="text-align:center;color:var(--g3);padding:20px;">No content logged yet</td></tr>`;
+
+  let socRows=soc.length?soc.map((r,i)=>`<tr>
+    <td>${r.month||'—'}</td>
+    <td>${(r.ig||0).toLocaleString()}</td>
+    <td style="color:${i>0&&r.ig>soc[i-1].ig?'var(--green)':'var(--red)'};">${i>0?(r.ig-soc[i-1].ig>=0?'+':'')+(r.ig-soc[i-1].ig).toLocaleString():'—'}</td>
+    <td>${(r.tt||0).toLocaleString()}</td>
+    <td style="color:${i>0&&r.tt>soc[i-1].tt?'var(--green)':'var(--red)'};">${i>0?(r.tt-soc[i-1].tt>=0?'+':'')+(r.tt-soc[i-1].tt).toLocaleString():'—'}</td>
+    <td>${(r.yt||0).toLocaleString()}</td>
+    <td style="color:${i>0&&r.yt>soc[i-1].yt?'var(--green)':'var(--red)'};">${i>0?(r.yt-soc[i-1].yt>=0?'+':'')+(r.yt-soc[i-1].yt).toLocaleString():'—'}</td>
+    <td>${r.notes||'—'}</td>
+  </tr>`).join(''):`<tr><td colspan="8" style="text-align:center;color:var(--g3);padding:20px;">No social growth data yet</td></tr>`;
+
+  // Totals
+  const tNC=or.reduce((s,r)=>s+(r.nc||0),0);
+  const tBK=or.reduce((s,r)=>s+(r.bk||0),0);
+  const tTK=or.reduce((s,r)=>s+(r.tk||0),0);
+  const tCL=st.reduce((s,r)=>s+(r.cl||0),0)||or.reduce((s,r)=>s+(r.cl||0),0);
+  const tCash=st.reduce((s,r)=>s+(r.cash||0),0)||or.reduce((s,r)=>s+(r.cash||0),0);
+  const css=tNC>0?Math.round(tBK/tNC*100):0;
+  const show=tBK>0?Math.round(tTK/tBK*100):0;
+  const close=tTK>0?Math.round(tCL/tTK*100):0;
+
+  const modal=document.getElementById('client-modal');
+  modal.innerHTML=`
+    <div style="background:var(--bg2);border:1px solid var(--b2);border-radius:12px;width:90vw;max-width:1100px;max-height:88vh;overflow-y:auto;padding:28px;position:relative;">
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;position:sticky;top:0;background:var(--bg2);padding-bottom:14px;border-bottom:1px solid var(--b1);z-index:10;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:50%;background:var(--w2);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:900;font-size:18px;color:var(--bg);">${u.name[0]}</div>
+          <div>
+            <div style="font-family:var(--fd);font-size:22px;font-weight:900;letter-spacing:.3px;color:var(--w2);">${u.name}</div>
+            <div style="font-size:11px;color:var(--g2);margin-top:1px;">${u.niche||'—'} · March 2026 · Read-only admin view</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-o btn-sm" onclick="viewClientLive('${uid}');document.getElementById('client-modal').classList.remove('open')">Switch to Live View →</button>
+          <button class="btn btn-r btn-sm" onclick="document.getElementById('client-modal').classList.remove('open')">✕ Close</button>
+        </div>
+      </div>
+
+      <!-- KPI summary -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;">
+        <div style="background:var(--bg3);border:1px solid var(--b1);border-radius:7px;padding:12px;text-align:center;">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:5px;">New Convos</div>
+          <div style="font-family:var(--fd);font-size:26px;font-weight:800;color:var(--w2);">${tNC||'—'}</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--b1);border-radius:7px;padding:12px;text-align:center;">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:5px;">Calls Booked</div>
+          <div style="font-family:var(--fd);font-size:26px;font-weight:800;color:var(--w2);">${tBK||'—'}</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--b1);border-radius:7px;padding:12px;text-align:center;">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:5px;">Convo→SS%</div>
+          <div style="font-family:var(--fd);font-size:26px;font-weight:800;color:${css>=15?'var(--green)':css>=10?'var(--yellow)':'var(--red)'};">${css?css+'%':'—'}</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--b1);border-radius:7px;padding:12px;text-align:center;">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:5px;">Close Rate</div>
+          <div style="font-family:var(--fd);font-size:26px;font-weight:800;color:${close>=30?'var(--green)':close>=20?'var(--yellow)':'var(--red)'};">${close?close+'%':'—'}</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--b1);border-radius:7px;padding:12px;text-align:center;">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:5px;">Cash Collected</div>
+          <div style="font-family:var(--fd);font-size:26px;font-weight:800;color:${tCash>0?'var(--green)':'var(--w2)'};">$${tCash.toLocaleString()}</div>
+        </div>
+      </div>
+
+      <!-- Outreach -->
+      <div style="margin-bottom:20px;">
+        <div style="font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--b1);">📋 Outreach Tracker</div>
+        <div class="tbl-wrap" style="max-height:220px;overflow-y:auto;">
+          <table><thead><tr><th>Day</th><th>Convos</th><th>Source</th><th>Responded</th><th>NC→R%</th><th>Booked</th><th>Taken</th><th>Show%</th><th>No Shows</th><th>Follow Ups</th><th>Closed</th><th>Cash</th></tr></thead>
+          <tbody>${orRows}</tbody></table>
+        </div>
+      </div>
+
+      <!-- Sales -->
+      <div style="margin-bottom:20px;">
+        <div style="font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--b1);">💰 Sales Tracker</div>
+        <div class="tbl-wrap" style="max-height:220px;overflow-y:auto;">
+          <table><thead><tr><th>Day</th><th>Booked</th><th>Taken</th><th>Show%</th><th>Offers</th><th>No Shows</th><th>Follow Ups</th><th>Closed</th><th>Close%</th><th>Cash</th><th>Revenue</th></tr></thead>
+          <tbody>${stRows}</tbody></table>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div style="margin-bottom:20px;">
+        <div style="font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--b1);">📱 Content (${ct.length} posts)</div>
+        <div class="tbl-wrap" style="max-height:200px;overflow-y:auto;">
+          <table><thead><tr><th>Date</th><th>Platform</th><th>Format</th><th>Hook</th><th>Status</th><th>Views</th><th>Likes</th><th>DMs</th><th>Leads</th><th>Notes</th></tr></thead>
+          <tbody>${ctRows}</tbody></table>
+        </div>
+      </div>
+
+      <!-- Social -->
+      <div>
+        <div style="font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--b1);">📈 Social Growth</div>
+        <div class="tbl-wrap" style="max-height:180px;overflow-y:auto;">
+          <table><thead><tr><th>Month</th><th>Instagram</th><th>IG Δ</th><th>TikTok</th><th>TT Δ</th><th>YouTube</th><th>YT Δ</th><th>Notes</th></tr></thead>
+          <tbody>${socRows}</tbody></table>
+        </div>
+      </div>
+    </div>`;
+  modal.classList.add('open');
+}
+
+function removeClient(uid,name){
+  if(!confirm(`Remove ${name} from the portal? Their data will stay saved.`))return;
+  const users=getUsers();
+  delete users[uid];
+  saveUsers(users);
+  rebuildClientSwitch();
+  renderClients();
+  showToast(name+' removed');
+}
+
+function approveRequest(i){
+  const reqs=getRequests();
+  const r=reqs[i];
+  const users=getUsers();
+  const uid=r.name.toLowerCase().replace(/\s+/g,'_');
+  users[uid]={ id:uid, name:r.name, role:'client', niche:r.niche, fee:0, email:r.email, added:new Date().toISOString() };
+  saveUsers(users);
+  reqs.splice(i,1);
+  saveRequests(reqs);
+  rebuildClientSwitch();
+  renderClients();
+  showToast(r.name+' approved & added!');
+}
+
+function denyRequest(i){
+  const reqs=getRequests();
+  const name=reqs[i].name;
+  reqs.splice(i,1);
+  saveRequests(reqs);
+  renderClients();
+  showToast(name+' request denied');
+}
+
+// ══════════════════════════════════════
+//  INVITE
+// ══════════════════════════════════════
+let lastInvName='';
+
+function generateInvite(){
+  const name=document.getElementById('inv-name').value.trim();
+  const email=document.getElementById('inv-email').value.trim();
+  const niche=document.getElementById('inv-niche').value.trim();
+  if(!name){ showToast('Please enter a name'); return; }
+
+  // Add to users
+  const uid=name.toLowerCase().replace(/\s+/g,'_');
+  const users=getUsers();
+  users[uid]={ id:uid, name, role:'client', niche, fee:0, email, added:new Date().toISOString() };
+  saveUsers(users);
+  rebuildClientSwitch();
+  lastInvName=name;
+
+  // Build a working invite link — encodes the name into the URL hash
+  // When client clicks it, the page reads the hash and pre-fills their name
+  const base = window.location.href.split('?')[0].split('#')[0];
+  const loginLink = base + '?login=' + encodeURIComponent(name);
+
+  const shortMsg =
+`Hey ${name.split(' ')[0]}! 👋
+
+You've been added to the Flowly client portal.
+
+👉 Click here to log in: ${loginLink}
+
+It will open the portal and log you straight in. Just click the link — no password needed.
+
+Fill in your outreach, sales, content and social growth daily. I can see everything from my side.
+
+— Jack`;
+
+  const emailBody =
+`Hi ${name.split(' ')[0]},
+
+I've added you to the Flowly client portal where you can track everything — outreach, sales, content and social growth.
+
+Click the link below to log straight in:
+
+${loginLink}
+
+No password needed — the link logs you in automatically. Once you're in, fill in your daily numbers and I can see your progress in real time.
+
+There's also a Claude AI chat in the sidebar if you need help with scripts, hooks or content ideas.
+
+Talk soon,
+Jack`;
+
+  document.getElementById('inv-msg').innerHTML=
+    `<strong>Login link (click to test):</strong><br>
+     <a href="${loginLink}" target="_blank" style="color:var(--blue);word-break:break-all;">${loginLink}</a>`;
+  document.getElementById('inv-email-tmpl').textContent=emailBody;
+  document.getElementById('inv-result-card').style.display='block';
+
+  // Copy buttons
+  document.getElementById('inv-btns').innerHTML=`
+    <button class="btn btn-w btn-sm" onclick="copyText(${JSON.stringify(loginLink)})">📋 Copy Login Link</button>
+    <button class="btn btn-o btn-sm" onclick="copyText(${JSON.stringify(shortMsg)})">📋 Copy Full Message</button>
+    ${email ? `<button class="btn btn-o btn-sm" style="border-color:rgba(234,67,53,.4);color:#ea4335;" onclick="openGmail(${JSON.stringify(email)},${JSON.stringify(name)},${JSON.stringify(emailBody)})">✉️ Send via Gmail</button>` : ''}
+  `;
+
+  showToast(name+' added to portal!');
+}
+
+function openGmail(email, name, body){
+  const subject = encodeURIComponent("You've been added to the Flowly Portal");
+  const bodyEnc = encodeURIComponent(body);
+  const toEnc   = encodeURIComponent(email);
+  // Opens Gmail compose in a new tab — works regardless of browser default mail app
+  window.open(
+    `https://mail.google.com/mail/?view=cm&fs=1&to=${toEnc}&su=${subject}&body=${bodyEnc}`,
+    '_blank'
+  );
+}
+
+function copyText(txt){
+  navigator.clipboard.writeText(txt).then(()=>showToast('Copied!')).catch(()=>fallbackCopy(txt));
+}
+function copyEl(id){
+  const el=document.getElementById(id);
+  const txt=el.innerText||el.textContent;
+  navigator.clipboard.writeText(txt).then(()=>showToast('Copied!')).catch(()=>fallbackCopy(txt));
+}
+function fallbackCopy(txt){
+  const ta=document.createElement('textarea');
+  ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+  document.body.removeChild(ta); showToast('Copied!');
+}
+
+// ══════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════
+function t(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+function fmt(n){if(n>=1000)return(n/1000).toFixed(1)+'K';return n.toLocaleString();}
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.style.opacity='1';
+  setTimeout(()=>el.style.opacity='0',2200);
+}
+</script>
+</body>
+</html>
