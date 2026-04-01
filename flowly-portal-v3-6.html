@@ -262,15 +262,18 @@ tbody tr:hover td{background:rgba(255,255,255,.02);}
       <input class="auth-input" id="su-name" type="text" placeholder="Your full name"/>
     </div>
     <div>
-      <label class="auth-label">Email (so Jack can confirm)</label>
+      <label class="auth-label">Your Email</label>
       <input class="auth-input" id="su-email" type="email" placeholder="your@email.com"/>
     </div>
     <div>
       <label class="auth-label">What are you working on?</label>
       <input class="auth-input" id="su-niche" type="text" placeholder="e.g. Fitness coaching"/>
     </div>
-    <button class="auth-btn" onclick="submitSignup()">Send Request →</button>
-    <div class="auth-err" id="su-err" style="color:var(--green)"></div>
+    <button class="auth-btn" id="su-btn" onclick="submitSignup()">Send Request →</button>
+    <div class="auth-err" id="su-err"></div>
+    <div style="font-size:10px;color:var(--g3);text-align:center;line-height:1.6;">
+      Jack will get an email notification and add you.<br>You'll receive your login link once you're added.
+    </div>
     <div class="auth-link" onclick="showScreen('loginScreen')">Already have access? <span>Sign in →</span></div>
   </div>
 </div>
@@ -729,11 +732,15 @@ tbody tr:hover td{background:rgba(255,255,255,.02);}
         <div id="clients-list"></div>
       </div>
 
-      <!-- Pending signups -->
+      <!-- Access requests now come via email (Formspree) -->
       <div class="card">
-        <div class="card-h"><div><div class="card-t">Access Requests</div><div class="card-s">People who signed up — approve to add them</div></div></div>
-        <div id="requests-list">
-          <div class="empty-state"><div class="empty-icon">📬</div><div class="empty-title">No Pending Requests</div><div class="empty-sub">When someone fills the signup form, they'll appear here</div></div>
+        <div class="card-h"><div><div class="card-t">Access Requests</div><div class="card-s">Requests are sent directly to your email via Formspree</div></div></div>
+        <div style="padding:16px 0 4px;font-size:12px;color:var(--g2);line-height:1.8;">
+          When a client fills the <strong style="color:var(--w);">Request Access</strong> form on the login screen, you receive an email instantly.<br><br>
+          Just come back here → <strong style="color:var(--w);">Invite Client</strong> → add them → send them their login link.
+          <div style="margin-top:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--b2);border-radius:6px;font-size:11px;color:var(--g3);">
+            Not receiving emails? Check the setup instructions in the <strong style="color:var(--g2);">Invite Client</strong> tab.
+          </div>
         </div>
       </div>
     </div>
@@ -772,13 +779,20 @@ tbody tr:hover td{background:rgba(255,255,255,.02);}
           </div>
 
           <div class="card" style="margin-top:12px;">
-            <div class="card-h"><div><div class="card-t">How It Works</div></div></div>
-            <div style="display:flex;flex-direction:column;gap:10px;font-size:12px;color:var(--g2);line-height:1.7;">
-              <div><strong style="color:var(--w);">1. Add client</strong> — fill in name, email, niche and fee above</div>
-              <div><strong style="color:var(--w);">2. Share the invite</strong> — copy the link or email template and send it</div>
-              <div><strong style="color:var(--w);">3. They log in</strong> — they type their full name on the login screen</div>
-              <div><strong style="color:var(--w);">4. They fill in data</strong> — outreach, sales, content, social daily</div>
-              <div><strong style="color:var(--w);">5. You see everything</strong> — switch between clients in the top bar</div>
+            <div class="card-h"><div><div class="card-t">⚡ One-Time Setup — Receive Access Requests by Email</div></div></div>
+            <div style="display:flex;flex-direction:column;gap:12px;font-size:12px;color:var(--g2);line-height:1.8;">
+              <div style="background:rgba(245,197,24,.06);border:1px solid rgba(245,197,24,.25);border-radius:7px;padding:12px;font-size:11px;color:var(--yellow);">
+                ⚠️ Without this setup, access requests from clients are lost. Takes 2 minutes.
+              </div>
+              <div><strong style="color:var(--w);">Step 1</strong> — Go to <a href="https://formspree.io" target="_blank" style="color:var(--blue);">formspree.io</a> and create a free account</div>
+              <div><strong style="color:var(--w);">Step 2</strong> — Click <strong style="color:var(--w2);">+ New Form</strong>, give it any name (e.g. "Flowly Requests")</div>
+              <div><strong style="color:var(--w);">Step 3</strong> — Copy your form ID — it looks like <code style="background:var(--bg3);padding:2px 6px;border-radius:3px;color:var(--w2);">xpwzgkla</code></div>
+              <div><strong style="color:var(--w);">Step 4</strong> — Open this HTML file in a text editor, find <code style="background:var(--bg3);padding:2px 6px;border-radius:3px;color:var(--w2);">YOUR_FORM_ID</code> and replace it with your ID</div>
+              <div><strong style="color:var(--w);">Done!</strong> — When a client fills the signup form, you'll get an email instantly at your Formspree email. Reply with their invite link.</div>
+              <div style="padding-top:8px;border-top:1px solid var(--b1);">
+                <strong style="color:var(--w);">How it works once set up:</strong><br>
+                Client fills signup form → you get emailed → you add them via Invite Client above → you send them their login link
+              </div>
             </div>
           </div>
         </div>
@@ -884,13 +898,63 @@ function submitSignup(){
   const email = document.getElementById('su-email').value.trim();
   const niche = document.getElementById('su-niche').value.trim();
   const err   = document.getElementById('su-err');
-  if(!name||!email){ err.textContent='Please fill in your name and email.'; err.style.color='var(--red)'; err.style.display='block'; return; }
-  const reqs = getRequests();
-  reqs.push({ name, email, niche, submitted: new Date().toISOString() });
-  saveRequests(reqs);
-  err.textContent = '✅ Request sent! Jack will add you and send your login details.';
-  err.style.color='var(--green)'; err.style.display='block';
-  setTimeout(()=>showScreen('loginScreen'),3000);
+  const btn   = document.getElementById('su-btn');
+
+  if(!name||!email){
+    err.textContent='Please fill in your name and email.';
+    err.style.color='var(--red)'; err.style.display='block'; return;
+  }
+
+  err.textContent='Sending...';
+  err.style.color='var(--g2)'; err.style.display='block';
+  btn.disabled=true; btn.textContent='Sending...';
+
+  // Formspree — sends the request as an email directly to Jack
+  // Jack needs to create a free form at formspree.io and paste his form ID below
+  // Takes 2 minutes: go to formspree.io → New Form → copy the form ID (looks like "xpwzgkla")
+  const FORMSPREE_ID = 'mnjozlqp';
+
+  fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+    method: 'POST',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name:      name,
+      email:     email,
+      niche:     niche || 'Not specified',
+      message:   `New access request from the Flowly portal.\n\nName: ${name}\nEmail: ${email}\nNiche: ${niche||'Not specified'}\n\nReply to this email to send them their login link.`,
+      _replyto:  email,
+      _subject:  `New Flowly Portal Request — ${name}`,
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(data.ok){
+      err.textContent = '✅ Request sent! Jack will get back to you with your login link.';
+      err.style.color = 'var(--green)';
+      btn.textContent = 'Sent ✓';
+      setTimeout(()=>showScreen('loginScreen'), 3500);
+    } else if(FORMSPREE_ID === 'YOUR_FORM_ID'){
+      // Formspree not set up yet — show setup instructions
+      err.innerHTML = '⚠️ <strong>Admin:</strong> Set up Formspree to receive these emails.<br><span style="font-size:10px;color:var(--g3);">Go to formspree.io → New Form → paste ID into the code.</span>';
+      err.style.color = 'var(--yellow)';
+      btn.disabled = false; btn.textContent = 'Send Request →';
+    } else {
+      err.textContent = 'Something went wrong. Please message Jack directly.';
+      err.style.color = 'var(--red)';
+      btn.disabled = false; btn.textContent = 'Try Again';
+    }
+  })
+  .catch(() => {
+    if(FORMSPREE_ID === 'YOUR_FORM_ID'){
+      err.innerHTML = '⚠️ <strong>To receive access requests:</strong><br><span style="font-size:11px;color:var(--g2);">1. Go to <strong>formspree.io</strong><br>2. Create a free account → New Form<br>3. Copy your form ID and paste it into the code where it says YOUR_FORM_ID</span>';
+      err.style.color = 'var(--yellow)'; err.style.display='block';
+      btn.disabled = false; btn.textContent = 'Send Request →';
+    } else {
+      err.textContent = 'Connection error. Please try again.';
+      err.style.color = 'var(--red)';
+      btn.disabled = false; btn.textContent = 'Try Again';
+    }
+  });
 }
 
 function startApp(){
